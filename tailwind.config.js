@@ -10,7 +10,6 @@ export default {
           'red-light': '#FF1A1A',
           dark: '#1C1C1C',
           gray: '#F5F5F5',
-          'gray-mid': '#9CA3AF',
           border: '#E5E7EB',
         }
       },
@@ -20,6 +19,9 @@ export default {
       boxShadow: {
         card: '0 2px 8px rgba(0,0,0,0.08)',
         nav: '0 -2px 12px rgba(0,0,0,0.08)',
+      },
+      maxWidth: {
+        '8xl': '88rem',
       }
     }
   },
