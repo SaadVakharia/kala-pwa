@@ -118,7 +118,7 @@ export default function AppLayout() {
   )
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-kala-gray">
+    <div className="app-shell bg-kala-gray">
 
       {/* ── DESKTOP SIDEBAR ── */}
       <aside className="

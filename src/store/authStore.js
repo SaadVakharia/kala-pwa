@@ -86,13 +86,32 @@ export const useAuthStore = create(
       },
 
       // ── STEP 2: Verify OTP ──
-      verifyOtp: async (otp) => {
+      // extraData is optional: { fullName, company, password } for registration
+      verifyOtp: async (otp, extraData) => {
         set({ loading: true, error: null })
         try {
           const { confirmationResult } = get()
           if (!confirmationResult) throw new Error('No OTP session. Please resend.')
           const result = await confirmationResult.confirm(otp)
-          // Creates profile doc if first login, returns role
+
+          // If registration data provided, update the profile
+          if (extraData?.fullName) {
+            const ref = doc(db, 'profiles', result.user.uid)
+            const snap = await getDoc(ref)
+            const profileData = {
+              phone: result.user.phoneNumber || null,
+              fullName: extraData.fullName,
+              company: extraData.company || '',
+              role: snap.exists() ? (snap.data().role || 'employee') : 'employee',
+              ...(snap.exists() ? { updatedAt: serverTimestamp() } : { createdAt: serverTimestamp() }),
+            }
+            await setDoc(ref, profileData, { merge: true })
+            const role = profileData.role
+            set({ user: result.user, role, confirmationResult: null, loading: false })
+            return { success: true, role }
+          }
+
+          // Standard login flow — creates profile doc if first login
           const role = await getOrCreateProfile(result.user)
           set({ user: result.user, role, confirmationResult: null, loading: false })
           return { success: true, role }

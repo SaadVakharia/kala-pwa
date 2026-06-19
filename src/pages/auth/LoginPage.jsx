@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useAuthStore, ROLE_HOME } from '../../store/authStore'
 import { Eye, EyeOff, Phone, ArrowLeft, Shield } from 'lucide-react'
 
@@ -125,7 +125,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen w-screen flex bg-kala-gray">
+    <div className="min-h-[100dvh] w-screen flex bg-kala-gray">
 
       {/* ── LEFT PANEL desktop ── */}
       <div className="hidden md:flex flex-col justify-between w-[45%] bg-kala-dark p-12">
@@ -224,6 +224,13 @@ export default function LoginPage() {
                 <button type="submit" disabled={loading || phone.length < 10} className={btnCls}>
                   {loading ? 'Please wait...' : method === 'otp' ? 'Send OTP' : 'Continue'}
                 </button>
+
+                <p className="text-center text-sm text-gray-500">
+                  Don't have an account?{' '}
+                  <Link to="/register" className="text-kala-red font-medium hover:underline">
+                    Create one
+                  </Link>
+                </p>
               </div>
             </form>
           )}

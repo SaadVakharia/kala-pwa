@@ -3,6 +3,7 @@ import { useAuthStore, ROLE_HOME } from './store/authStore'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import AppLayout from './layouts/AppLayout'
 import LoginPage from './pages/auth/LoginPage'
+import RegisterPage from './pages/auth/RegisterPage'
 import UnauthorizedPage from './pages/shared/UnauthorizedPage'
 
 // Admin
@@ -35,6 +36,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
       <Route path="/" element={<RoleRedirect />} />
 
