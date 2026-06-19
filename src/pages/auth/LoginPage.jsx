@@ -250,29 +250,29 @@ export default function LoginPage() {
               </div>
 
               {/* OTP boxes */}
-              <div className="flex justify-between gap-2 mb-6" onPaste={handleOtpPaste}>
-                {otp.map((digit, idx) => (
-                  <input
-                    key={idx}
-                    id={`otp-${idx}`}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={1}
-                    value={digit}
-                    onChange={(e) => handleOtpChange(e.target.value, idx)}
-                    onKeyDown={(e) => handleOtpKeyDown(e, idx)}
-                    style={{ width: '44px', height: '52px' }}
-                    className={`
-                      text-center text-xl font-bold rounded-xl border-2
-                      focus:outline-none transition-all shrink-0
-                      ${digit
-                        ? 'border-kala-red bg-red-50 text-kala-red'
-                        : 'border-gray-200 bg-white text-kala-dark focus:border-kala-red'
-                      }
-                    `}
-                  />
-                ))}
-              </div>
+                <div className="flex justify-center gap-2.5 mb-6" onPaste={handleOtpPaste}>
+                  {otp.map((digit, idx) => (
+                    <input
+                      key={idx}
+                      id={`otp-${idx}`}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleOtpChange(e.target.value, idx)}
+                      onKeyDown={(e) => handleOtpKeyDown(e, idx)}
+                      className={`
+                        w-10 h-10 text-center text-lg font-bold rounded-lg border-2
+                        focus:outline-none transition-all
+                        ${
+                          digit
+                            ? "border-kala-red bg-red-50 text-kala-red"
+                            : "border-gray-200 bg-white text-kala-dark focus:border-kala-red"
+                        }
+                      `}
+                    />
+                  ))}
+                </div>
 
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700 mb-4">

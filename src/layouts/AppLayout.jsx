@@ -9,8 +9,8 @@ import {
 const NAV_CONFIG = {
   admin: [
     { path: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-    { path: '/admin/sites', label: 'Sites', icon: MapPin },
-    { path: '/admin/employees', label: 'Team', icon: Users },
+    { path: '/admin/projects', label: 'Projects', icon: MapPin },
+    { path: '/admin/users', label: 'Team', icon: Users },
     { path: '/admin/reports', label: 'Reports', icon: FileText },
   ],
   employee: [

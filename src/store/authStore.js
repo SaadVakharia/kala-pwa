@@ -15,7 +15,6 @@ export const ROLES = {
   RSP_TECHNICIAN: 'rsp_technician',
   RSP_ISSUE: 'rsp_issue',
   CLIENT: 'client',
-  GUEST: 'guest',
 }
 
 export const ROLE_HOME = {
@@ -24,26 +23,30 @@ export const ROLE_HOME = {
   rsp_technician: '/rsp',
   rsp_issue: '/rsp-issue',
   client: '/client',
-  guest: '/guest',
 }
 
-// Fetch role — auto-create profile doc if first login
-async function fetchOrCreateUserRole(uid, phone) {
-  const ref = doc(db, 'profiles', uid)
-  const snap = await getDoc(ref)
-  if (snap.exists()) return snap.data().role || 'guest'
-  // First login — create profile with guest role
-  await setDoc(ref, {
-    uid,
-    phone: phone || null,
-    role: 'guest',
-    createdAt: serverTimestamp(),
-  })
-  return 'guest'
-}
+// Fetch role — creates profile if first login
+async function getOrCreateProfile(user) {
+  try {
+    const ref = doc(db, 'profiles', user.uid)
+    const snap = await getDoc(ref)
 
-let _confirmationResult = null
-let _pendingPhone = null
+    if (snap.exists()) {
+      return snap.data().role || 'employee'
+    }
+
+    // First login — create profile with default role
+    await setDoc(ref, {
+      phone: user.phoneNumber || null,
+      role: 'employee',
+      fullName: '',
+      createdAt: serverTimestamp(),
+    })
+    return 'employee'
+  } catch {
+    return 'employee'
+  }
+}
 
 export const useAuthStore = create(
   persist(
@@ -52,7 +55,9 @@ export const useAuthStore = create(
       role: null,
       loading: false,
       error: null,
+      confirmationResult: null,
 
+      // ── STEP 1: Send OTP ──
       sendOtp: async (phoneNumber) => {
         set({ loading: true, error: null })
         try {
@@ -63,48 +68,47 @@ export const useAuthStore = create(
               { size: 'invisible' }
             )
           }
-          _pendingPhone = phoneNumber
-          _confirmationResult = await signInWithPhoneNumber(
+          const confirmation = await signInWithPhoneNumber(
             auth,
             phoneNumber,
             window.recaptchaVerifier
           )
-          set({ loading: false })
+          set({ confirmationResult: confirmation, loading: false })
           return { success: true }
         } catch (err) {
           if (window.recaptchaVerifier) {
             window.recaptchaVerifier.clear()
             window.recaptchaVerifier = null
           }
-          _confirmationResult = null
-          _pendingPhone = null
           set({ error: err.message, loading: false })
           return { success: false, error: err.message }
         }
       },
 
+      // ── STEP 2: Verify OTP ──
       verifyOtp: async (otp) => {
         set({ loading: true, error: null })
         try {
-          if (!_confirmationResult) throw new Error('No OTP session. Please resend.')
-          const result = await _confirmationResult.confirm(otp)
-          const role = await fetchOrCreateUserRole(result.user.uid, _pendingPhone)
-          _confirmationResult = null
-          _pendingPhone = null
-          set({ user: result.user, role, loading: false })
+          const { confirmationResult } = get()
+          if (!confirmationResult) throw new Error('No OTP session. Please resend.')
+          const result = await confirmationResult.confirm(otp)
+          // Creates profile doc if first login, returns role
+          const role = await getOrCreateProfile(result.user)
+          set({ user: result.user, role, confirmationResult: null, loading: false })
           return { success: true, role }
         } catch (err) {
-          set({ error: err.message, loading: false })
+          set({ error: 'Invalid OTP. Please try again.', loading: false })
           return { success: false, error: err.message }
         }
       },
 
+      // ── PASSWORD LOGIN ──
       loginWithPassword: async (phone, password) => {
         set({ loading: true, error: null })
         try {
           const email = `${phone.replace('+', '')}@kalafield.app`
           const result = await signInWithEmailAndPassword(auth, email, password)
-          const role = await fetchOrCreateUserRole(result.user.uid, phone)
+          const role = await getOrCreateProfile(result.user)
           set({ user: result.user, role, loading: false })
           return { success: true, role }
         } catch (err) {
@@ -113,11 +117,10 @@ export const useAuthStore = create(
         }
       },
 
+      // ── LOGOUT ──
       logout: async () => {
         await signOut(auth)
-        _confirmationResult = null
-        _pendingPhone = null
-        set({ user: null, role: null, error: null })
+        set({ user: null, role: null, error: null, confirmationResult: null })
       },
 
       clearError: () => set({ error: null }),
