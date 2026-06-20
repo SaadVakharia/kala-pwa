@@ -1,9 +1,8 @@
-import { useState } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
-import { useAuthStore } from '../store/authStore'
+import { useAuthStore, ROLE_LABELS } from '../store/authStore'
 import {
   LayoutDashboard, MapPin, Users, FileText,
-  ClipboardList, Bell, LogOut, X, ChevronRight
+  ClipboardList, Bell, LogOut
 } from 'lucide-react'
 
 const NAV_CONFIG = {
@@ -15,13 +14,13 @@ const NAV_CONFIG = {
   ],
   employee: [
     { path: '/employee', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-    { path: '/employee/sites', label: 'Sites', icon: MapPin },
+    { path: '/employee/projects', label: 'Projects', icon: MapPin },
     { path: '/employee/reports', label: 'Reports', icon: ClipboardList },
   ],
   rsp_technician: [
     { path: '/rsp', label: 'Dashboard', icon: LayoutDashboard, exact: true },
     { path: '/rsp/issues', label: 'Issues', icon: ClipboardList },
-    { path: '/rsp/sites', label: 'Sites', icon: MapPin },
+    { path: '/rsp/projects', label: 'Projects', icon: MapPin },
   ],
   rsp_issue: [
     { path: '/rsp-issue', label: 'Dashboard', icon: LayoutDashboard, exact: true },
@@ -29,18 +28,11 @@ const NAV_CONFIG = {
   ],
   client: [
     { path: '/client', label: 'Overview', icon: LayoutDashboard, exact: true },
-    { path: '/client/sites', label: 'My Sites', icon: MapPin },
+    { path: '/client/projects', label: 'Projects', icon: MapPin },
     { path: '/client/reports', label: 'Reports', icon: FileText },
   ],
 }
 
-const ROLE_LABELS = {
-  admin: 'Administrator',
-  employee: 'Employee',
-  rsp_technician: 'RSP Technician',
-  rsp_issue: 'RSP Issue',
-  client: 'Client',
-}
 
 function isActive(item, pathname) {
   if (item.exact) return pathname === item.path
@@ -51,20 +43,16 @@ export default function AppLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const { role, user, logout } = useAuthStore()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const navItems = NAV_CONFIG[role] || []
-  const initials = user?.email?.[0]?.toUpperCase() || 'U'
+  const initials = user?.displayName?.[0]?.toUpperCase() || user?.phoneNumber?.[3]?.toUpperCase() || 'U'
 
   const handleLogout = async () => {
     await logout()
     navigate('/login', { replace: true })
   }
 
-  const handleNav = (path) => {
-    navigate(path)
-    setSidebarOpen(false)
-  }
+  const handleNav = (path) => navigate(path)
 
   const NavItems = ({ vertical = false }) => (
     <>
@@ -89,12 +77,7 @@ export default function AppLayout() {
             >
               <Icon size={20} strokeWidth={active ? 2.5 : 1.8} className="flex-shrink-0" />
               <span className="text-sm font-medium hidden xl:block">{item.label}</span>
-              <span className="
-                xl:hidden absolute left-full ml-3 px-2 py-1 text-xs font-medium
-                bg-gray-900 text-white rounded-md whitespace-nowrap
-                opacity-0 group-hover:opacity-100 pointer-events-none
-                transition-opacity z-50
-              ">
+              <span className="xl:hidden absolute left-full ml-3 px-2 py-1 text-xs font-medium bg-gray-900 text-white rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50">
                 {item.label}
               </span>
             </button>
@@ -120,14 +103,8 @@ export default function AppLayout() {
   return (
     <div className="app-shell bg-kala-gray">
 
-      {/* ── DESKTOP SIDEBAR ── */}
-      <aside className="
-        hidden md:flex flex-col
-        bg-kala-dark
-        w-16 xl:w-56
-        flex-shrink-0 h-full
-        transition-all duration-200
-      ">
+      {/* DESKTOP SIDEBAR */}
+      <aside className="hidden md:flex flex-col bg-kala-dark w-16 xl:w-56 flex-shrink-0 h-full transition-all duration-200">
         <div className="flex items-center justify-center xl:justify-start px-3 xl:px-4 py-4 border-b border-white/10 h-16 flex-shrink-0">
           <img src="/logo.png" alt="KALA" className="h-7 object-contain brightness-0 invert hidden xl:block" />
           <div className="xl:hidden w-8 h-8 bg-kala-red rounded-lg flex items-center justify-center">
@@ -145,7 +122,7 @@ export default function AppLayout() {
               <span className="text-white text-xs font-bold">{initials}</span>
             </div>
             <div className="hidden xl:block min-w-0">
-              <p className="text-white text-xs font-medium truncate">{user?.email}</p>
+              <p className="text-white text-xs font-medium truncate">{user?.phoneNumber || user?.email}</p>
               <p className="text-gray-400 text-[10px] truncate">{ROLE_LABELS[role]}</p>
             </div>
           </div>
@@ -163,46 +140,36 @@ export default function AppLayout() {
         </div>
       </aside>
 
-      {/* ── MAIN CONTENT ── */}
+      {/* MAIN CONTENT */}
       <div className="flex flex-col flex-1 min-w-0 h-full overflow-hidden">
 
-        {/* Top Header */}
         <header className="bg-white border-b border-kala-border px-4 h-16 flex items-center justify-between flex-shrink-0 z-10">
-
-          {/* Mobile: logo left */}
           <div className="md:hidden">
             <img src="/logo.png" alt="KALA" className="h-8 object-contain" />
           </div>
-
-          {/* Desktop: role label */}
           <div className="hidden md:block">
             <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">
               {ROLE_LABELS[role]}
             </p>
           </div>
-
-          {/* Right side */}
           <div className="flex items-center gap-2">
-            {/* Bell — always */}
             <button className="p-2 rounded-full hover:bg-gray-100 relative">
               <Bell size={20} className="text-kala-dark" />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-kala-red rounded-full" />
             </button>
-            {/* Initials — mobile only */}
             <div className="md:hidden w-8 h-8 rounded-full bg-kala-red flex items-center justify-center">
               <span className="text-white text-xs font-bold">{initials}</span>
             </div>
           </div>
         </header>
 
-        {/* Scrollable content */}
         <main className="flex-1 overflow-y-auto">
           <div className="max-w-6xl mx-auto px-4 py-6 w-full">
             <Outlet />
           </div>
         </main>
 
-        {/* ── MOBILE BOTTOM NAV ── */}
+        {/* MOBILE BOTTOM NAV */}
         <nav className="md:hidden bg-white border-t border-kala-border flex-shrink-0 safe-bottom">
           <div className="flex">
             <NavItems />

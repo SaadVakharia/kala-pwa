@@ -4,16 +4,12 @@ import { PageHeader } from '../../components/shared/PageHeader'
 import { Badge } from '../../components/shared/Badge'
 import { EmptyState } from '../../components/shared/EmptyState'
 import { Modal } from '../../components/shared/Modal'
+import { Input } from '../../components/ui/Input'
 import { updateDocument } from '../../api/firestore'
+import { useAuthStore, ROLE_LABELS } from '../../store/authStore'
 import { Users, Search, Shield } from 'lucide-react'
 
-const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent'
-
 const ROLES = ['admin', 'employee', 'rsp_technician', 'rsp_issue', 'client']
-const ROLE_LABELS = {
-  admin: 'Administrator', employee: 'Employee',
-  rsp_technician: 'RSP Technician', rsp_issue: 'RSP Issue', client: 'Client'
-}
 
 export default function AdminUsers() {
   const { users, loading } = useUsers()
@@ -46,21 +42,19 @@ export default function AdminUsers() {
       />
 
       {/* Search + Filter */}
-      <div className="flex gap-2 mb-4">
-        <div className="relative flex-1">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search by name or phone..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className={`${inputCls} pl-9`}
-          />
-        </div>
+      <div className="flex items-center gap-2 mb-4">
+        <Input
+          type="text"
+          placeholder="Search by name or phone..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          leftIcon={Search}
+          containerClassName="flex-1"
+        />
         <select
           value={filterRole}
           onChange={e => setFilterRole(e.target.value)}
-          className="px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-kala-red"
+          className="px-3 py-3 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all"
         >
           <option value="all">All Roles</option>
           {ROLES.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}

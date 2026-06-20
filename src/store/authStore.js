@@ -25,6 +25,14 @@ export const ROLE_HOME = {
   client: '/client',
 }
 
+export const ROLE_LABELS = {
+  admin: 'Administrator',
+  employee: 'Employee',
+  rsp_technician: 'RSP Technician',
+  rsp_issue: 'RSP Issue',
+  client: 'Client',
+}
+
 // Fetch role — creates profile if first login
 async function getOrCreateProfile(user) {
   try {

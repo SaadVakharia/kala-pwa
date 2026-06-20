@@ -12,12 +12,10 @@ import AdminProjects from './pages/admin/Projects'
 import AdminUsers from './pages/admin/Users'
 import AdminReports from './pages/admin/Reports'
 
-// Employee (same as admin minus users)
-import EmployeeDashboard from './pages/admin/Dashboard'
-import EmployeeProjects from './pages/admin/Projects'
-import EmployeeReports from './pages/admin/Reports'
+// Employee — shares admin pages
+import EmployeeDashboard from './pages/employee/Dashboard'
 
-// Placeholders for other roles
+// Other roles
 import RspDashboard from './pages/rsp/Dashboard'
 import ClientDashboard from './pages/client/Dashboard'
 import RspIssueDashboard from './pages/rsp/IssueDashboard'
@@ -41,7 +39,7 @@ export default function App() {
       <Route path="/" element={<RoleRedirect />} />
 
       <Route element={
-        <Guard roles={['admin','employee','rsp_technician','rsp_issue','client']}>
+        <Guard roles={['admin', 'employee', 'rsp_technician', 'rsp_issue', 'client']}>
           <AppLayout />
         </Guard>
       }>
@@ -49,12 +47,13 @@ export default function App() {
         <Route path="/admin" element={<Guard roles={['admin']}><AdminDashboard /></Guard>} />
         <Route path="/admin/projects" element={<Guard roles={['admin']}><AdminProjects /></Guard>} />
         <Route path="/admin/users" element={<Guard roles={['admin']}><AdminUsers /></Guard>} />
-        <Route path="/admin/reports" element={<Guard roles={['admin','employee']}><AdminReports /></Guard>} />
+        <Route path="/admin/reports" element={<Guard roles={['admin', 'employee']}><AdminReports /></Guard>} />
 
-        {/* Employee (shared components, no /users) */}
+        {/* Employee — same pages as admin, different base path */}
         <Route path="/employee" element={<Guard roles={['employee']}><EmployeeDashboard /></Guard>} />
-        <Route path="/employee/sites" element={<Guard roles={['employee']}><EmployeeProjects /></Guard>} />
-        <Route path="/employee/reports" element={<Guard roles={['employee']}><EmployeeReports /></Guard>} />
+        <Route path="/employee/projects" element={<Guard roles={['employee']}><AdminProjects /></Guard>} />
+        <Route path="/employee/reports" element={<Guard roles={['employee']}><AdminReports /></Guard>} />
+        <Route path="/employee/users" element={<Guard roles={['employee']}><AdminUsers /></Guard>} />
 
         {/* RSP */}
         <Route path="/rsp" element={<Guard roles={['rsp_technician']}><RspDashboard /></Guard>} />

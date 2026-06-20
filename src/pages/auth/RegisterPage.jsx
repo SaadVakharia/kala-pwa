@@ -2,20 +2,10 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuthStore, ROLE_HOME } from '../../store/authStore'
 import { ArrowLeft, Shield, User, Building2, Eye, EyeOff, CheckCircle2 } from 'lucide-react'
-
-// ── Shared styles (mirroring LoginPage) ──
-const inputCls = `
-  w-full px-4 py-3 rounded-xl border border-gray-200 bg-white
-  text-kala-dark placeholder:text-gray-400 text-sm
-  focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent
-  transition-all
-`
-
-const btnCls = `
-  w-full bg-kala-red hover:bg-kala-red-dark text-white font-semibold
-  py-3 rounded-xl transition-all active:scale-95
-  disabled:opacity-50 disabled:cursor-not-allowed text-sm
-`
+import { Input } from '../../components/ui/Input'
+import { Button } from '../../components/ui/Button'
+import { OtpInput } from '../../components/ui/OtpInput'
+import { formatPhone } from '../../utils/helpers'
 
 const SCREEN = {
   DETAILS: 'details',   // enter name, phone, company, password
@@ -36,13 +26,6 @@ export default function RegisterPage() {
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [countdown, setCountdown] = useState(0)
   const [localError, setLocalError] = useState('')
-
-  const formatPhone = (raw) => {
-    const digits = raw.replace(/\D/g, '')
-    if (digits.startsWith('91') && digits.length === 12) return `+${digits}`
-    if (digits.length === 10) return `+91${digits}`
-    return `+${digits}`
-  }
 
   const startCountdown = () => {
     setCountdown(30)
@@ -93,31 +76,6 @@ export default function RegisterPage() {
       setTimeout(() => {
         navigate(ROLE_HOME[result.role] || '/employee', { replace: true })
       }, 2000)
-    }
-  }
-
-  // ── OTP input handlers ──
-  const handleOtpChange = (val, idx) => {
-    if (!/^\d*$/.test(val)) return
-    const next = [...otp]
-    next[idx] = val.slice(-1)
-    setOtp(next)
-    if (val && idx < 5) {
-      document.getElementById(`reg-otp-${idx + 1}`)?.focus()
-    }
-  }
-
-  const handleOtpKeyDown = (e, idx) => {
-    if (e.key === 'Backspace' && !otp[idx] && idx > 0) {
-      document.getElementById(`reg-otp-${idx - 1}`)?.focus()
-    }
-  }
-
-  const handleOtpPaste = (e) => {
-    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
-    if (pasted.length === 6) {
-      setOtp(pasted.split(''))
-      document.getElementById('reg-otp-5')?.focus()
     }
   }
 
@@ -179,103 +137,81 @@ export default function RegisterPage() {
 
               <div className="flex flex-col gap-4">
                 {/* Full Name */}
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium text-kala-dark">Full Name</label>
-                  <div className="relative">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                      <User size={18} />
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="Enter your full name"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      required
-                      className={`${inputCls} pl-10`}
-                      autoComplete="name"
-                    />
-                  </div>
-                </div>
+                <Input
+                  label="Full Name"
+                  type="text"
+                  placeholder="Enter your full name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                  leftIcon={User}
+                  autoComplete="name"
+                />
 
                 {/* Phone Number */}
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium text-kala-dark">Mobile Number</label>
-                  <div className="relative">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 border-r border-gray-200 pr-3">
-                      <span className="text-sm font-medium text-kala-dark">🇮🇳 +91</span>
-                    </div>
-                    <input
-                      type="tel"
-                      placeholder="98765 43210"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                      required
-                      className={`${inputCls} pl-24`}
-                      inputMode="numeric"
-                    />
-                  </div>
-                </div>
+                <Input
+                  label="Mobile Number"
+                  type="tel"
+                  placeholder="98765 43210"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                  required
+                  prefix={<span className="text-sm font-medium text-kala-dark">🇮🇳 +91</span>}
+                  inputMode="numeric"
+                />
 
                 {/* Company / Organization (optional) */}
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium text-kala-dark">
-                    Company / Organization
-                    <span className="text-gray-400 font-normal ml-1">(optional)</span>
-                  </label>
-                  <div className="relative">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                      <Building2 size={18} />
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="e.g. Kala Group"
-                      value={company}
-                      onChange={(e) => setCompany(e.target.value)}
-                      className={`${inputCls} pl-10`}
-                      autoComplete="organization"
-                    />
-                  </div>
-                </div>
+                <Input
+                  label={
+                    <span>
+                      Company / Organization
+                      <span className="text-gray-400 font-normal ml-1">(optional)</span>
+                    </span>
+                  }
+                  type="text"
+                  placeholder="e.g. Kala Group"
+                  value={company}
+                  onChange={(e) => setCompany(e.target.value)}
+                  leftIcon={Building2}
+                  autoComplete="organization"
+                />
 
                 {/* Password */}
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium text-kala-dark">Create Password</label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="Minimum 6 characters"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      minLength={6}
-                      className={`${inputCls} pr-12`}
-                      autoComplete="new-password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
-                    >
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
+                <div>
+                  <Input
+                    label="Create Password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Minimum 6 characters"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    autoComplete="new-password"
+                    rightIcon={
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="text-gray-400 hover:text-gray-600 p-1 flex items-center justify-center"
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    }
+                  />
                   {password.length > 0 && (
-                    <div className="flex items-center gap-2 mt-1">
+                    <div className="flex items-center gap-2 mt-2 px-1">
                       <div className="flex-1 h-1.5 rounded-full bg-gray-200 overflow-hidden">
                         <div
-                          className={`h-full rounded-full transition-all ${
-                            password.length >= 8
+                          className={`h-full rounded-full transition-all ${password.length >= 8
                               ? 'bg-green-500 w-full'
                               : password.length >= 6
                                 ? 'bg-yellow-500 w-2/3'
                                 : 'bg-red-400 w-1/3'
-                          }`}
+                            }`}
                           style={{ width: password.length >= 8 ? '100%' : password.length >= 6 ? '66%' : '33%' }}
                         />
                       </div>
-                      <span className={`text-[10px] font-medium ${
-                        password.length >= 8 ? 'text-green-600' : password.length >= 6 ? 'text-yellow-600' : 'text-red-500'
-                      }`}>
+                      <span className={`text-[10px] font-medium ${password.length >= 8 ? 'text-green-600' : password.length >= 6 ? 'text-yellow-600' : 'text-red-500'
+                        }`}>
                         {password.length >= 8 ? 'Strong' : password.length >= 6 ? 'Good' : 'Weak'}
                       </span>
                     </div>
@@ -288,13 +224,15 @@ export default function RegisterPage() {
                   </div>
                 )}
 
-                <button
+                <Button
                   type="submit"
                   disabled={loading || phone.length < 10 || !fullName.trim() || password.length < 6}
-                  className={btnCls}
+                  loading={loading}
+                  loadingLabel="Sending OTP..."
+                  fullWidth
                 >
-                  {loading ? 'Sending OTP...' : 'Continue'}
-                </button>
+                  Continue
+                </Button>
 
                 <p className="text-center text-sm text-gray-500">
                   Already have an account?{' '}
@@ -327,44 +265,24 @@ export default function RegisterPage() {
                 </p>
               </div>
 
-              {/* OTP boxes */}
-              <div className="flex justify-center gap-2.5 mb-6" onPaste={handleOtpPaste}>
-                {otp.map((digit, idx) => (
-                  <input
-                    key={idx}
-                    id={`reg-otp-${idx}`}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={1}
-                    value={digit}
-                    onChange={(e) => handleOtpChange(e.target.value, idx)}
-                    onKeyDown={(e) => handleOtpKeyDown(e, idx)}
-                    className={`
-                      w-10 h-10 text-center text-lg font-bold rounded-lg border-2
-                      focus:outline-none transition-all
-                      ${
-                        digit
-                          ? "border-kala-red bg-red-50 text-kala-red"
-                          : "border-gray-200 bg-white text-kala-dark focus:border-kala-red"
-                      }
-                    `}
-                  />
-                ))}
+              <div className="mb-6">
+                <OtpInput
+                  value={otp}
+                  onChange={setOtp}
+                  error={displayError}
+                />
               </div>
 
-              {(error || localError) && (
-                <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700 mb-4">
-                  {error || localError}
-                </div>
-              )}
-
-              <button
+              <Button
                 type="submit"
                 disabled={loading || otp.join('').length < 6}
-                className={`${btnCls} mb-4`}
+                loading={loading}
+                loadingLabel="Verifying..."
+                fullWidth
+                className="mb-4"
               >
-                {loading ? 'Verifying...' : 'Verify & Create Account'}
-              </button>
+                Verify & Create Account
+              </Button>
 
               {/* Resend */}
               <p className="text-center text-sm text-gray-500">

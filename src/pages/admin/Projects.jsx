@@ -1,14 +1,16 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useProjects } from '../../hooks/useProjects'
 import { PageHeader } from '../../components/shared/PageHeader'
-import { Badge } from '../../components/shared/Badge'
+import { ProjectCard } from '../../components/shared/ProjectCard'
 import { EmptyState } from '../../components/shared/EmptyState'
 import { Modal } from '../../components/shared/Modal'
-import { addDocument, updateDocument } from '../../api/firestore'
-import { MapPin, Plus, Search, Filter } from 'lucide-react'
-
-const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent'
+import { Input } from '../../components/ui/Input'
+import { Button } from '../../components/ui/Button'
+import { addDocument } from '../../api/firestore'
+import { storage } from '../../api/firebase'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { MapPin, Plus, Search, ImagePlus, X } from 'lucide-react'
 
 const STATUS_OPTS = ['active', 'on_hold', 'completed']
 
@@ -19,7 +21,14 @@ export default function AdminProjects() {
   const [filterStatus, setFilterStatus] = useState('all')
   const [modalOpen, setModalOpen] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [form, setForm] = useState({ name: '', location: '', client: '', status: 'active', startDate: '', endDate: '' })
+  const [imageFile, setImageFile] = useState(null)
+  const [imagePreview, setImagePreview] = useState(null)
+  const [uploadProgress, setUploadProgress] = useState(false)
+  const fileInputRef = useRef()
+
+  const [form, setForm] = useState({
+    name: '', location: '', client: '', status: 'active', startDate: '', endDate: ''
+  })
 
   const filtered = projects.filter(p => {
     const matchSearch = p.name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -28,13 +37,50 @@ export default function AdminProjects() {
     return matchSearch && matchStatus
   })
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    setImageFile(file)
+    const reader = new FileReader()
+    reader.onload = (ev) => setImagePreview(ev.target.result)
+    reader.readAsDataURL(file)
+  }
+
+  const clearImage = () => {
+    setImageFile(null)
+    setImagePreview(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
   const handleSave = async (e) => {
     e.preventDefault()
     setSaving(true)
-    await addDocument('projects', form)
-    setSaving(false)
+    try {
+      let imageUrl = null
+
+      if (imageFile) {
+        setUploadProgress(true)
+        const storageRef = ref(storage, `projects/${Date.now()}_${imageFile.name}`)
+        await uploadBytes(storageRef, imageFile)
+        imageUrl = await getDownloadURL(storageRef)
+        setUploadProgress(false)
+      }
+
+      await addDocument('projects', { ...form, ...(imageUrl ? { imageUrl } : {}) })
+      setModalOpen(false)
+      setForm({ name: '', location: '', client: '', status: 'active', startDate: '', endDate: '' })
+      clearImage()
+    } catch (err) {
+      console.error('Save failed:', err)
+    } finally {
+      setSaving(false)
+      setUploadProgress(false)
+    }
+  }
+
+  const closeModal = () => {
     setModalOpen(false)
-    setForm({ name: '', location: '', client: '', status: 'active', startDate: '', endDate: '' })
+    clearImage()
   }
 
   return (
@@ -53,21 +99,19 @@ export default function AdminProjects() {
       />
 
       {/* Search + Filter */}
-      <div className="flex gap-2 mb-4">
-        <div className="relative flex-1">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search projects..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className={`${inputCls} pl-9`}
-          />
-        </div>
+      <div className="flex items-center gap-2 mb-4">
+        <Input
+          type="text"
+          placeholder="Search projects..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          leftIcon={Search}
+          containerClassName="flex-1"
+        />
         <select
           value={filterStatus}
           onChange={e => setFilterStatus(e.target.value)}
-          className="px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-kala-red"
+          className="px-3 py-3 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all"
         >
           <option value="all">All</option>
           {STATUS_OPTS.map(s => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}
@@ -77,7 +121,9 @@ export default function AdminProjects() {
       {/* List */}
       {loading ? (
         <div className="flex flex-col gap-2">
-          {[...Array(5)].map((_, i) => <div key={i} className="bg-white rounded-2xl h-20 animate-pulse border border-kala-border" />)}
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="bg-white rounded-2xl h-20 animate-pulse border border-kala-border" />
+          ))}
         </div>
       ) : filtered.length === 0 ? (
         <EmptyState
@@ -93,51 +139,73 @@ export default function AdminProjects() {
       ) : (
         <div className="flex flex-col gap-2">
           {filtered.map(p => (
-            <button
+            <ProjectCard
               key={p.id}
+              project={p}
               onClick={() => navigate(`/admin/projects/${p.id}`)}
-              className="bg-white rounded-2xl p-4 shadow-card border border-kala-border flex items-center gap-3 hover:shadow-md transition-all text-left w-full"
-            >
-              <div className="w-12 h-12 bg-kala-red/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                <MapPin size={20} className="text-kala-red" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-kala-dark truncate">{p.name}</p>
-                <p className="text-xs text-gray-500 truncate">{p.location || '—'}</p>
-                {p.client && <p className="text-xs text-gray-400 truncate">Client: {p.client}</p>}
-              </div>
-              <div className="flex-shrink-0">
-                <Badge status={p.status || 'active'} />
-              </div>
-            </button>
+            />
           ))}
         </div>
       )}
 
       {/* Add Project Modal */}
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Add Project">
+      <Modal open={modalOpen} onClose={closeModal} title="Add Project">
         <form onSubmit={handleSave} className="flex flex-col gap-4">
+
+          {/* Image Upload */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-kala-dark">
+              Project Photo <span className="text-gray-400 font-normal">(optional)</span>
+            </label>
+            {imagePreview ? (
+              <div className="relative rounded-xl overflow-hidden h-36 bg-gray-100">
+                <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={clearImage}
+                  className="absolute top-2 right-2 w-7 h-7 bg-black/50 rounded-full flex items-center justify-center text-white hover:bg-black/70"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="h-24 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 hover:bg-gray-100 hover:border-kala-red/40 transition-all flex flex-col items-center justify-center gap-1.5"
+              >
+                <ImagePlus size={22} className="text-gray-400" />
+                <span className="text-xs text-gray-400 font-medium">Tap to add photo</span>
+              </button>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageChange}
+            />
+          </div>
+
           {[
             { label: 'Project Name *', key: 'name', placeholder: 'e.g. Green Heights Tower', required: true },
             { label: 'Location', key: 'location', placeholder: 'e.g. Mumbai, Maharashtra' },
             { label: 'Client Name', key: 'client', placeholder: 'e.g. Rahul Developers' },
           ].map(f => (
-            <div key={f.key} className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-kala-dark">{f.label}</label>
-              <input
-                className={inputCls}
-                placeholder={f.placeholder}
-                value={form[f.key]}
-                onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
-                required={f.required}
-              />
-            </div>
+            <Input
+              key={f.key}
+              label={f.label}
+              placeholder={f.placeholder}
+              value={form[f.key]}
+              onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
+              required={f.required}
+            />
           ))}
 
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-kala-dark">Status</label>
             <select
-              className={inputCls}
+              className="w-full px-3 py-3 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all"
               value={form.status}
               onChange={e => setForm(p => ({ ...p, status: e.target.value }))}
             >
@@ -147,25 +215,26 @@ export default function AdminProjects() {
 
           <div className="grid grid-cols-2 gap-3">
             {[{ label: 'Start Date', key: 'startDate' }, { label: 'End Date', key: 'endDate' }].map(f => (
-              <div key={f.key} className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-kala-dark">{f.label}</label>
-                <input
-                  type="date"
-                  className={inputCls}
-                  value={form[f.key]}
-                  onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
-                />
-              </div>
+              <Input
+                key={f.key}
+                label={f.label}
+                type="date"
+                value={form[f.key]}
+                onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
+              />
             ))}
           </div>
 
-          <button
+          <Button
             type="submit"
             disabled={saving}
-            className="w-full bg-kala-red text-white font-semibold py-3 rounded-xl hover:bg-kala-red-dark transition-all disabled:opacity-50 mt-1"
+            loading={saving || uploadProgress}
+            loadingLabel={uploadProgress ? 'Uploading photo...' : 'Saving...'}
+            fullWidth
+            className="mt-1"
           >
-            {saving ? 'Saving...' : 'Add Project'}
-          </button>
+            Add Project
+          </Button>
         </form>
       </Modal>
     </div>
