@@ -6,7 +6,8 @@ import { Input } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
 import { OtpInput } from '../../components/ui/OtpInput'
 import { formatPhone } from '../../utils/helpers'
-
+import { auth } from '../../api/firebase'
+import { RecaptchaVerifier } from 'firebase/auth'
 const SCREEN = {
   PHONE: 'phone',       // enter phone number
   OTP: 'otp',           // enter OTP
@@ -44,11 +45,28 @@ export default function LoginPage() {
   const handleSendOtp = async (e) => {
     e?.preventDefault()
     clearError()
-    const formatted = formatPhone(phone)
-    const result = await sendOtp(formatted)
-    if (result.success) {
-      setScreen(SCREEN.OTP)
-      startCountdown()
+    
+    try {
+      if (!window.recaptchaVerifier) {
+        window.recaptchaVerifier = new RecaptchaVerifier(
+          auth,
+          'recaptcha-container',
+          { size: 'invisible' }
+        )
+      }
+
+      const formatted = formatPhone(phone)
+      const result = await sendOtp(formatted, window.recaptchaVerifier)
+      if (result.success) {
+        setScreen(SCREEN.OTP)
+        startCountdown()
+      }
+    } catch (err) {
+      console.error('Recaptcha Init Error:', err)
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear()
+        window.recaptchaVerifier = null
+      }
     }
   }
 
@@ -178,13 +196,6 @@ export default function LoginPage() {
                 >
                   {method === 'otp' ? 'Send OTP' : 'Continue'}
                 </Button>
-
-                <p className="text-center text-sm text-gray-500">
-                  Don't have an account?{' '}
-                  <Link to="/register" className="text-kala-red font-medium hover:underline">
-                    Create one
-                  </Link>
-                </p>
               </div>
             </form>
           )}

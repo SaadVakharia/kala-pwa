@@ -1,37 +1,43 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
-import { useAuthStore, ROLE_LABELS } from '../store/authStore'
+import { useAuthStore, ROLE_LABELS, ROLES } from '../store/authStore'
 import {
   LayoutDashboard, MapPin, Users, FileText,
   ClipboardList, Bell, LogOut
 } from 'lucide-react'
 
+const ADMIN_NAV = [
+  { path: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
+  { path: '/admin/projects', label: 'Projects', icon: MapPin },
+  { path: '/admin/users', label: 'Team', icon: Users },
+  { path: '/admin/reports', label: 'Reports', icon: FileText },
+]
+
+const EMPLOYEE_NAV = [
+  { path: '/employee', label: 'Dashboard', icon: LayoutDashboard, exact: true },
+  { path: '/employee/projects', label: 'Projects', icon: MapPin },
+  { path: '/employee/reports', label: 'Reports', icon: ClipboardList },
+  { path: '/employee/users', label: 'Team', icon: Users },
+]
+
+const CLIENT_NAV = [
+  { path: '/client', label: 'Overview', icon: LayoutDashboard, exact: true },
+  { path: '/client/projects', label: 'Projects', icon: MapPin },
+  { path: '/client/reports', label: 'Reports', icon: FileText },
+]
+
 const NAV_CONFIG = {
-  admin: [
-    { path: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-    { path: '/admin/projects', label: 'Projects', icon: MapPin },
-    { path: '/admin/users', label: 'Team', icon: Users },
-    { path: '/admin/reports', label: 'Reports', icon: FileText },
-  ],
-  employee: [
-    { path: '/employee', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-    { path: '/employee/projects', label: 'Projects', icon: MapPin },
-    { path: '/employee/reports', label: 'Reports', icon: ClipboardList },
-  ],
-  rsp_technician: [
-    { path: '/rsp', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-    { path: '/rsp/issues', label: 'Issues', icon: ClipboardList },
-    { path: '/rsp/projects', label: 'Projects', icon: MapPin },
-  ],
-  rsp_issue: [
-    { path: '/rsp-issue', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-    { path: '/rsp-issue/issues', label: 'Issues', icon: ClipboardList },
-  ],
-  client: [
-    { path: '/client', label: 'Overview', icon: LayoutDashboard, exact: true },
-    { path: '/client/projects', label: 'Projects', icon: MapPin },
-    { path: '/client/reports', label: 'Reports', icon: FileText },
-  ],
+  [ROLES.ADMIN]: ADMIN_NAV,
+  [ROLES.GENERAL_MANAGER]: ADMIN_NAV,
+  [ROLES.HR_MANAGER]: ADMIN_NAV,
+  [ROLES.CLIENT]: CLIENT_NAV,
 }
+
+// Map all other roles to employee nav
+Object.values(ROLES).forEach(role => {
+  if (!NAV_CONFIG[role]) {
+    NAV_CONFIG[role] = EMPLOYEE_NAV
+  }
+})
 
 
 function isActive(item, pathname) {

@@ -5,18 +5,17 @@ import { Badge } from '../../components/shared/Badge'
 import { EmptyState } from '../../components/shared/EmptyState'
 import { Modal } from '../../components/shared/Modal'
 import { Input } from '../../components/ui/Input'
+import { Button } from '../../components/ui/Button'
 import { updateDocument } from '../../api/firestore'
-import { useAuthStore, ROLE_LABELS } from '../../store/authStore'
-import { Users, Search, Shield } from 'lucide-react'
-
-const ROLES = ['admin', 'employee', 'rsp_technician', 'rsp_issue', 'client']
+import { useAuthStore, ROLE_LABELS, ROLES } from '../../store/authStore'
+import { Users, Search, Shield, Plus } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 export default function AdminUsers() {
+  const navigate = useNavigate()
   const { users, loading } = useUsers()
   const [search, setSearch] = useState('')
   const [filterRole, setFilterRole] = useState('all')
-  const [selected, setSelected] = useState(null)
-  const [saving, setSaving] = useState(false)
 
   const filtered = users.filter(u => {
     const matchSearch =
@@ -26,19 +25,16 @@ export default function AdminUsers() {
     return matchSearch && matchRole
   })
 
-  const handleRoleChange = async (newRole) => {
-    if (!selected || newRole === selected.role) return
-    setSaving(true)
-    await updateDocument('profiles', selected.id, { role: newRole })
-    setSaving(false)
-    setSelected(s => ({ ...s, role: newRole }))
-  }
-
   return (
     <div>
       <PageHeader
         title="Team Members"
         subtitle={`${users.length} registered users`}
+        action={
+          <Button onClick={() => navigate('/admin/users/create')} size="sm" className="gap-2 flex items-center">
+            <Plus size={16} /> Add User
+          </Button>
+        }
       />
 
       {/* Search + Filter */}
@@ -57,7 +53,7 @@ export default function AdminUsers() {
           className="px-3 py-3 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all"
         >
           <option value="all">All Roles</option>
-          {ROLES.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
+          {Object.values(ROLES).map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
         </select>
       </div>
 
@@ -73,7 +69,7 @@ export default function AdminUsers() {
           {filtered.map(u => (
             <button
               key={u.id}
-              onClick={() => setSelected(u)}
+              onClick={() => navigate(`/admin/users/${u.id}`)}
               className="bg-white rounded-2xl p-4 shadow-card border border-kala-border flex items-center gap-3 hover:shadow-md transition-all text-left w-full"
             >
               {/* Avatar */}
@@ -96,64 +92,6 @@ export default function AdminUsers() {
           ))}
         </div>
       )}
-
-      {/* Role Edit Modal */}
-      <Modal
-        open={!!selected}
-        onClose={() => setSelected(null)}
-        title="Change Role"
-      >
-        {selected && (
-          <div className="flex flex-col gap-4">
-            {/* User info */}
-            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-              <div className="w-12 h-12 rounded-full bg-kala-red flex items-center justify-center">
-                <span className="text-white font-bold">
-                  {(selected.fullName || selected.phone || '?')[0].toUpperCase()}
-                </span>
-              </div>
-              <div>
-                <p className="font-semibold text-kala-dark">{selected.fullName || 'Unnamed User'}</p>
-                <p className="text-sm text-gray-500">{selected.phone}</p>
-              </div>
-            </div>
-
-            <p className="text-sm font-medium text-kala-dark">Select Role</p>
-            <div className="flex flex-col gap-2">
-              {ROLES.map(r => (
-                <button
-                  key={r}
-                  onClick={() => handleRoleChange(r)}
-                  disabled={saving}
-                  className={`flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all text-left
-                    ${selected.role === r
-                      ? 'border-kala-red bg-red-50'
-                      : 'border-gray-200 bg-white hover:border-gray-300'
-                    }`}
-                >
-                  <div>
-                    <p className="text-sm font-medium text-kala-dark">{ROLE_LABELS[r]}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      {r === 'admin' && 'Full access + user management'}
-                      {r === 'employee' && 'Submit reports, view sites'}
-                      {r === 'rsp_technician' && 'RSP issues and site work'}
-                      {r === 'rsp_issue' && 'Raise and track RSP issues'}
-                      {r === 'client' && 'View progress and reports'}
-                    </p>
-                  </div>
-                  {selected.role === r && (
-                    <div className="w-5 h-5 rounded-full bg-kala-red flex items-center justify-center flex-shrink-0">
-                      <div className="w-2 h-2 rounded-full bg-white" />
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
-
-            {saving && <p className="text-sm text-center text-gray-500">Updating role...</p>}
-          </div>
-        )}
-      </Modal>
     </div>
   )
 }

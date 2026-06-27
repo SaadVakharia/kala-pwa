@@ -1,15 +1,16 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { useAuthStore, ROLE_HOME } from './store/authStore'
+import { useAuthStore, ROLE_HOME, ROLES } from './store/authStore'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import AppLayout from './layouts/AppLayout'
 import LoginPage from './pages/auth/LoginPage'
-import RegisterPage from './pages/auth/RegisterPage'
 import UnauthorizedPage from './pages/shared/UnauthorizedPage'
 
 // Admin
 import AdminDashboard from './pages/admin/Dashboard'
 import AdminProjects from './pages/admin/Projects'
 import AdminUsers from './pages/admin/Users'
+import CreateUser from './pages/admin/CreateUser'
+import UserDetails from './pages/admin/UserDetails'
 import AdminReports from './pages/admin/Reports'
 
 // Employee — shares admin pages
@@ -30,39 +31,39 @@ const Guard = ({ roles, children }) => (
   <ProtectedRoute allowedRoles={roles}>{children}</ProtectedRoute>
 )
 
+const ALL_ROLES = Object.values(ROLES)
+const ADMIN_ROLES = [ROLES.ADMIN, ROLES.GENERAL_MANAGER, ROLES.HR_MANAGER]
+const CLIENT_ROLES = [ROLES.CLIENT]
+const EMPLOYEE_ROLES = ALL_ROLES.filter(r => !ADMIN_ROLES.includes(r) && !CLIENT_ROLES.includes(r))
+
 export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
       <Route path="/" element={<RoleRedirect />} />
 
       <Route element={
-        <Guard roles={['admin', 'employee', 'rsp_technician', 'rsp_issue', 'client']}>
+        <Guard roles={ALL_ROLES}>
           <AppLayout />
         </Guard>
       }>
         {/* Admin */}
-        <Route path="/admin" element={<Guard roles={['admin']}><AdminDashboard /></Guard>} />
-        <Route path="/admin/projects" element={<Guard roles={['admin']}><AdminProjects /></Guard>} />
-        <Route path="/admin/users" element={<Guard roles={['admin']}><AdminUsers /></Guard>} />
-        <Route path="/admin/reports" element={<Guard roles={['admin', 'employee']}><AdminReports /></Guard>} />
+        <Route path="/admin" element={<Guard roles={ADMIN_ROLES}><AdminDashboard /></Guard>} />
+        <Route path="/admin/projects" element={<Guard roles={ADMIN_ROLES}><AdminProjects /></Guard>} />
+        <Route path="/admin/users" element={<Guard roles={ADMIN_ROLES}><AdminUsers /></Guard>} />
+        <Route path="/admin/users/create" element={<Guard roles={ADMIN_ROLES}><CreateUser /></Guard>} />
+        <Route path="/admin/users/:id" element={<Guard roles={ADMIN_ROLES}><UserDetails /></Guard>} />
+        <Route path="/admin/reports" element={<Guard roles={ADMIN_ROLES}><AdminReports /></Guard>} />
 
-        {/* Employee — same pages as admin, different base path */}
-        <Route path="/employee" element={<Guard roles={['employee']}><EmployeeDashboard /></Guard>} />
-        <Route path="/employee/projects" element={<Guard roles={['employee']}><AdminProjects /></Guard>} />
-        <Route path="/employee/reports" element={<Guard roles={['employee']}><AdminReports /></Guard>} />
-        <Route path="/employee/users" element={<Guard roles={['employee']}><AdminUsers /></Guard>} />
-
-        {/* RSP */}
-        <Route path="/rsp" element={<Guard roles={['rsp_technician']}><RspDashboard /></Guard>} />
-
-        {/* RSP Issue */}
-        <Route path="/rsp-issue" element={<Guard roles={['rsp_issue']}><RspIssueDashboard /></Guard>} />
+        {/* Employee */}
+        <Route path="/employee" element={<Guard roles={EMPLOYEE_ROLES}><EmployeeDashboard /></Guard>} />
+        <Route path="/employee/projects" element={<Guard roles={EMPLOYEE_ROLES}><AdminProjects /></Guard>} />
+        <Route path="/employee/reports" element={<Guard roles={EMPLOYEE_ROLES}><AdminReports /></Guard>} />
+        <Route path="/employee/users" element={<Guard roles={EMPLOYEE_ROLES}><AdminUsers /></Guard>} />
 
         {/* Client */}
-        <Route path="/client" element={<Guard roles={['client']}><ClientDashboard /></Guard>} />
+        <Route path="/client" element={<Guard roles={CLIENT_ROLES}><ClientDashboard /></Guard>} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
