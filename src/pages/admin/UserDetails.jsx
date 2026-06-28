@@ -80,7 +80,7 @@ export default function UserDetails() {
 
     setSaving(true)
     try {
-      let photoUrl = form.photoUrl
+      let photoUrl = form.photoUrl !== undefined ? form.photoUrl : null
       if (photo) {
         photoUrl = await uploadFile(`profiles/${id}-${Date.now()}`, photo)
       }
@@ -90,6 +90,13 @@ export default function UserDetails() {
         photoUrl,
         updatedAt: serverTimestamp()
       }
+
+      // Remove undefined values to prevent Firestore errors
+      Object.keys(updatedData).forEach(key => {
+        if (updatedData[key] === undefined) {
+          delete updatedData[key]
+        }
+      })
       
       await setDoc(doc(db, 'profiles', id), updatedData, { merge: true })
       

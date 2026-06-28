@@ -227,7 +227,8 @@ export const useAuthStore = create(
           set({ user: result.user, role, loading: false })
           return { success: true, role }
         } catch (err) {
-          set({ error: 'Invalid phone number or password.', loading: false })
+          console.error('Password Login Error:', err)
+          set({ error: `Login failed: ${err.message}`, loading: false })
           return { success: false, error: err.message }
         }
       },
