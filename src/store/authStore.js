@@ -56,14 +56,20 @@ export const ROLE_LABELS = {
   planning_engineer: 'Planning Engineer'
 }
 
-// Fetch role — creates profile if first login
-async function getOrCreateProfile(user) {
+// Check if user needs profile/password setup
+async function checkProfile(user) {
   try {
     const ref = doc(db, 'profiles', user.uid)
     const snap = await getDoc(ref)
 
+    // Check if user has email (meaning they have setup password)
+    const hasPassword = !!user.email
+
     if (snap.exists()) {
-      return snap.data().role || 'junior_technician'
+      if (!hasPassword) {
+         return { needsSetup: true, role: snap.data().role, isExisting: true }
+      }
+      return { needsSetup: false, role: snap.data().role || 'junior_technician' }
     }
 
     // --- INITIAL USER BOOTSTRAP ---
@@ -73,15 +79,7 @@ async function getOrCreateProfile(user) {
       const allProfilesSnap = await getDocs(allProfilesQuery)
       
       if (allProfilesSnap.empty) {
-        const adminData = {
-          phone: user.phoneNumber,
-          fullName: 'System Admin',
-          role: ROLES.ADMIN,
-          userType: 'Internal',
-          createdAt: serverTimestamp(),
-        }
-        await setDoc(ref, adminData)
-        return ROLES.ADMIN
+        return { needsSetup: true, role: ROLES.ADMIN, isFirstAdmin: true }
       }
     } catch (e) {
       console.warn("Could not check if profiles are empty:", e)
@@ -97,14 +95,7 @@ async function getOrCreateProfile(user) {
           const adminProfileDoc = querySnapshot.docs[0]
           const adminProfileData = adminProfileDoc.data()
           
-          await setDoc(ref, {
-            ...adminProfileData,
-            updatedAt: serverTimestamp(),
-          })
-          
-          await deleteDoc(adminProfileDoc.ref)
-          
-          return adminProfileData.role || 'junior_technician'
+          return { needsSetup: true, role: adminProfileData.role || 'junior_technician', adminProfileData, oldDocId: adminProfileDoc.id }
         }
       } catch (e) {
         console.warn("Could not query profiles. Rules might be restricting this:", e)
@@ -149,37 +140,79 @@ export const useAuthStore = create(
       },
 
       // ── STEP 2: Verify OTP ──
-      // extraData is optional: { fullName, company, password } for registration
-      verifyOtp: async (otp, extraData) => {
+      verifyOtp: async (otp) => {
         set({ loading: true, error: null })
         try {
           const { confirmationResult } = get()
           if (!confirmationResult) throw new Error('No OTP session. Please resend.')
           const result = await confirmationResult.confirm(otp)
 
-          // If registration data provided, update the profile
-          if (extraData?.fullName) {
-            const ref = doc(db, 'profiles', result.user.uid)
-            const snap = await getDoc(ref)
-            const profileData = {
-              phone: result.user.phoneNumber || null,
-              fullName: extraData.fullName,
-              company: extraData.company || '',
-              role: snap.exists() ? (snap.data().role || 'junior_technician') : 'junior_technician',
-              ...(snap.exists() ? { updatedAt: serverTimestamp() } : { createdAt: serverTimestamp() }),
-            }
-            await setDoc(ref, profileData, { merge: true })
-            const role = profileData.role
-            set({ user: result.user, role, confirmationResult: null, loading: false })
-            return { success: true, role }
+          const profileCheck = await checkProfile(result.user)
+          
+          if (profileCheck.needsSetup) {
+             set({ confirmationResult: null, loading: false })
+             return { success: true, needsSetup: true, setupData: profileCheck }
+          } else {
+             set({ user: result.user, role: profileCheck.role, confirmationResult: null, loading: false })
+             return { success: true, role: profileCheck.role }
           }
-
-          // Standard login flow — creates profile doc if first login
-          const role = await getOrCreateProfile(result.user)
-          set({ user: result.user, role, confirmationResult: null, loading: false })
-          return { success: true, role }
         } catch (err) {
           set({ error: 'Invalid OTP. Please try again.', loading: false })
+          return { success: false, error: err.message }
+        }
+      },
+
+      // ── STEP 3: Setup Profile ──
+      setupProfile: async (fullName, password, setupData) => {
+        set({ loading: true, error: null })
+        try {
+          const currentUser = auth.currentUser
+          if (!currentUser) throw new Error('Authentication lost. Please try again.')
+
+          // 1. Update Email and Password in Firebase Auth
+          const email = `${currentUser.phoneNumber.replace('+', '')}@kalafield.app`
+          const { updateEmail, updatePassword } = await import('firebase/auth')
+          await updateEmail(currentUser, email)
+          await updatePassword(currentUser, password)
+
+          // 2. Write to Firestore
+          const ref = doc(db, 'profiles', currentUser.uid)
+          
+          if (setupData.isFirstAdmin) {
+            await setDoc(ref, {
+              phone: currentUser.phoneNumber,
+              fullName,
+              role: ROLES.ADMIN,
+              userType: 'Internal',
+              createdAt: serverTimestamp(),
+            })
+          } else if (setupData.adminProfileData) {
+            await setDoc(ref, {
+              ...setupData.adminProfileData,
+              fullName,
+              updatedAt: serverTimestamp(),
+            })
+            if (setupData.oldDocId) {
+              const oldRef = doc(db, 'profiles', setupData.oldDocId)
+              await deleteDoc(oldRef)
+            }
+          } else if (setupData.isExisting) {
+            await setDoc(ref, { fullName, updatedAt: serverTimestamp() }, { merge: true })
+          } else {
+            await setDoc(ref, {
+              phone: currentUser.phoneNumber,
+              fullName,
+              role: setupData.role || 'junior_technician',
+              createdAt: serverTimestamp(),
+            })
+          }
+
+          // 3. Log them in completely
+          set({ user: currentUser, role: setupData.role, loading: false })
+          return { success: true, role: setupData.role }
+        } catch (err) {
+          console.error('Setup Error:', err)
+          set({ error: err.message, loading: false })
           return { success: false, error: err.message }
         }
       },
@@ -190,7 +223,7 @@ export const useAuthStore = create(
         try {
           const email = `${phone.replace('+', '')}@kalafield.app`
           const result = await signInWithEmailAndPassword(auth, email, password)
-          const role = await getOrCreateProfile(result.user)
+          const role = await checkProfile(result.user).then(res => res.role)
           set({ user: result.user, role, loading: false })
           return { success: true, role }
         } catch (err) {

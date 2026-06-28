@@ -12,12 +12,13 @@ const SCREEN = {
   PHONE: 'phone',       // enter phone number
   OTP: 'otp',           // enter OTP
   PASSWORD: 'password', // enter password
+  SETUP: 'setup',       // complete profile
 }
 
 export default function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { sendOtp, verifyOtp, loginWithPassword, loading, error, clearError } = useAuthStore()
+  const { sendOtp, verifyOtp, loginWithPassword, setupProfile, loading, error, clearError } = useAuthStore()
 
   const [method, setMethod] = useState('otp') // 'otp' | 'password'
   const [screen, setScreen] = useState(SCREEN.PHONE)
@@ -26,6 +27,11 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [countdown, setCountdown] = useState(0)
+
+  // Setup Profile State
+  const [setupData, setSetupData] = useState(null)
+  const [fullName, setFullName] = useState('')
+  const [setupPassword, setSetupPassword] = useState('')
 
   const redirectAfterLogin = (role) => {
     const from = location.state?.from?.pathname
@@ -76,6 +82,25 @@ export default function LoginPage() {
     const code = otp.join('')
     if (code.length < 6) return
     const result = await verifyOtp(code)
+    if (result.success) {
+      if (result.needsSetup) {
+        setSetupData(result.setupData)
+        if (result.setupData?.adminProfileData?.fullName) {
+          setFullName(result.setupData.adminProfileData.fullName)
+        } else if (result.setupData?.isFirstAdmin) {
+          setFullName('System Admin')
+        }
+        setScreen(SCREEN.SETUP)
+      } else {
+        redirectAfterLogin(result.role)
+      }
+    }
+  }
+
+  const handleSetupProfile = async (e) => {
+    e.preventDefault()
+    clearError()
+    const result = await setupProfile(fullName, setupPassword, setupData)
     if (result.success) redirectAfterLogin(result.role)
   }
 
@@ -310,6 +335,63 @@ export default function LoginPage() {
                   fullWidth
                 >
                   Sign In
+                </Button>
+              </div>
+            </form>
+          )}
+
+          {/* ── SCREEN: SETUP PROFILE ── */}
+          {screen === SCREEN.SETUP && (
+            <form onSubmit={handleSetupProfile}>
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-kala-dark">Complete Profile</h2>
+                <p className="text-gray-500 text-sm mt-1">
+                  Please set up your name and create a password.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-4">
+                <Input
+                  label="Full Name"
+                  type="text"
+                  placeholder="Enter your full name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                />
+                
+                <Input
+                  label="Create Password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Create a strong password"
+                  value={setupPassword}
+                  onChange={(e) => setSetupPassword(e.target.value)}
+                  required
+                  rightIcon={
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="text-gray-400 hover:text-gray-600 p-1 flex items-center justify-center"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  }
+                />
+
+                {error && (
+                  <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
+                    {error}
+                  </div>
+                )}
+
+                <Button
+                  type="submit"
+                  disabled={loading || !fullName || setupPassword.length < 6}
+                  loading={loading}
+                  loadingLabel="Saving..."
+                  fullWidth
+                >
+                  Save & Continue
                 </Button>
               </div>
             </form>
