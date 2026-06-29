@@ -100,8 +100,16 @@ export default function UserDetails() {
         }
       })
       
-      await setDoc(doc(db, 'profiles', id), updatedData, { merge: true })
+            await setDoc(doc(db, 'profiles', id), updatedData, { merge: true })
       
+      // Delete old files from storage if overwritten
+      if (aadharFile && user.aadharUrl) {
+        await deleteFile(user.aadharUrl);
+      }
+      if (panFile && user.panUrl) {
+        await deleteFile(user.panUrl);
+      }
+
       setUser(updatedData)
       setIsEditing(false)
       setAadharFile(null)
@@ -118,6 +126,10 @@ export default function UserDetails() {
     if (window.confirm("Are you sure you want to delete this user? This cannot be undone.")) {
       setSaving(true)
       try {
+                // Delete files from storage
+        if (user.aadharUrl) await deleteFile(user.aadharUrl);
+        if (user.panUrl) await deleteFile(user.panUrl);
+
         await deleteDoc(doc(db, 'profiles', id))
         navigate('/admin/users')
       } catch (err) {

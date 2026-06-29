@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { doc, getDoc, setDoc, serverTimestamp, collection, getDocs } from 'firebase/firestore'
-import { db, storage, uploadFile } from '../../api/firebase'
+import { db, storage, uploadFile, deleteFile } from '../../api/firebase'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import imageCompression from 'browser-image-compression'
 import { useAuthStore, ROLES } from '../../store/authStore'
@@ -138,8 +138,22 @@ export default function ProjectDetails() {
         updatedAt: serverTimestamp()
       }
 
-      await setDoc(doc(db, 'projects', id), updatedData, { merge: true })
+            await setDoc(doc(db, 'projects', id), updatedData, { merge: true })
       
+      // Delete old cover image if it was changed
+      if (project.imageUrl && imageUrl !== project.imageUrl) {
+        await deleteFile(project.imageUrl);
+      }
+
+      // Delete unlinked site files from storage
+      const newUrls = finalSiteFiles.map(f => f.url);
+      const deletedFiles = (project.siteFiles || []).filter(f => !newUrls.includes(f.url));
+      for (const df of deletedFiles) {
+        if (df.url) {
+          await deleteFile(df.url);
+        }
+      }
+
       setProject({ ...updatedData, id })
       setIsEditing(false)
       setSiteFiles(finalSiteFiles)

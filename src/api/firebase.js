@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -23,4 +23,14 @@ export const uploadFile = async (path, file) => {
   const storageRef = ref(storage, path)
   await uploadBytes(storageRef, file)
   return getDownloadURL(storageRef)
+}
+
+export const deleteFile = async (pathOrUrl) => {
+  if (!pathOrUrl) return
+  try {
+    const fileRef = ref(storage, pathOrUrl)
+    await deleteObject(fileRef)
+  } catch (err) {
+    console.error('Failed to delete file from storage:', err)
+  }
 }
