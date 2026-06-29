@@ -335,44 +335,52 @@ export default function CreateProject() {
                 </Button>
               </div>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {siteFiles.map((sf, index) => (
-                  <div key={sf.id} className="relative p-4 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 flex flex-col gap-3 group">
-                    <button 
-                      type="button" 
-                      onClick={() => removeSiteFile(sf.id)}
-                      className="absolute top-2 right-2 w-6 h-6 bg-red-100 text-kala-red rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                    >
-                      <X size={12} />
-                    </button>
-                    
-                    <div className="relative">
+              <div className="flex flex-col gap-3">
+                {siteFiles.map((sf) => (
+                  <div key={sf.id} className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 bg-white border border-gray-200 rounded-xl shadow-sm">
+                    {/* File input / status */}
+                    <div className="relative flex items-center justify-center w-12 h-12 rounded-lg bg-gray-50 border border-gray-100 flex-shrink-0 cursor-pointer hover:bg-gray-100 transition-colors">
                       <input 
                         type="file" 
                         accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                         onChange={(e) => handleSiteFileChange(sf.id, e.target.files[0])}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                       />
-                      <div className={`flex flex-col items-center justify-center py-4 text-center ${sf.file ? 'text-green-600' : 'text-gray-500 hover:text-kala-red transition-colors'}`}>
-                        {sf.file ? <CheckCircle2 size={24} className="mb-2" /> : <FileText size={24} className="mb-2" />}
-                        <span className="text-sm font-semibold">{sf.file ? 'File Selected' : 'Upload Document'}</span>
-                        <span className="text-[10px] text-gray-400 mt-1 truncate w-full px-4">{sf.file ? sf.file.name : 'PDF, DOC, JPG '}</span>
-                      </div>
+                      {sf.file ? <CheckCircle2 size={20} className="text-green-500" /> : <FileText size={20} className="text-gray-400" />}
                     </div>
                     
-                    <input 
-                      type="text" 
-                      placeholder="Document Name (e.g. BOQ)"
-                      value={sf.name}
-                      onChange={(e) => handleSiteFileNameChange(sf.id, e.target.value)}
-                      className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-kala-red"
-                    />
+                    {/* File Name Input */}
+                    <div className="flex-1 min-w-0">
+                      <input 
+                        type="text" 
+                        placeholder="Document Name (e.g. BOQ)"
+                        value={sf.name}
+                        onChange={(e) => handleSiteFileNameChange(sf.id, e.target.value)}
+                        className="w-full bg-transparent border-b border-transparent hover:border-gray-200 focus:border-kala-red px-1 py-1.5 text-sm font-semibold text-kala-dark focus:outline-none transition-colors"
+                      />
+                      {sf.file && <p className="text-[10px] text-gray-500 px-1 truncate mt-0.5">{sf.file.name}</p>}
+                    </div>
+
+                    <button 
+                      type="button" 
+                      onClick={() => removeSiteFile(sf.id)}
+                      className="p-2 text-gray-400 hover:text-kala-red hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                    >
+                      <Trash2 size={18} />
+                    </button>
                   </div>
                 ))}
-                {siteFiles.length === 0 && (
-                  <div className="col-span-full p-6 border-2 border-dashed border-gray-200 rounded-xl text-center text-sm text-gray-400 font-medium flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-gray-50 hover:border-kala-red/30 transition-all" onClick={addSiteFile}>
-                    <Plus size={20} /> Click "Add Document" to upload site files
-                  </div>
+                
+                {siteFiles.length === 0 ? (
+                  <button type="button" onClick={addSiteFile} className="w-full py-8 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 text-gray-500 hover:text-kala-red hover:border-kala-red/30 hover:bg-red-50/30 transition-colors flex flex-col items-center justify-center gap-2">
+                    <Plus size={24} className="text-gray-400" />
+                    <span className="text-sm font-semibold">Add First Document</span>
+                  </button>
+                ) : (
+                  <button type="button" onClick={addSiteFile} className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-500 hover:text-kala-dark hover:border-gray-300 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 mt-2">
+                    <Plus size={16} />
+                    <span className="text-sm font-semibold">Add Another Document</span>
+                  </button>
                 )}
               </div>
             </div>
@@ -383,7 +391,7 @@ export default function CreateProject() {
         </div>
 
         {/* Action Bar */}
-        <div className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 flex flex-col sm:flex-row gap-3 z-50 bg-white/90 p-2.5 sm:p-3 rounded-2xl shadow-2xl backdrop-blur-xl border border-gray-200">
+        <div className="sticky bottom-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200 py-3 sm:py-4 flex flex-col sm:flex-row gap-3 mt-8 -mx-5 px-5 sm:-mx-6 sm:px-6 md:-mx-8 md:px-8 justify-end shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
           <Button type="button" variant="outline" className="py-3.5 sm:py-2.5 sm:w-32 text-base sm:text-sm border-gray-200 order-2 sm:order-1" onClick={() => navigate(-1)} disabled={saving}>
             Cancel
           </Button>
