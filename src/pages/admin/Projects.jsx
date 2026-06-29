@@ -8,6 +8,9 @@ import { useAuthStore, ROLES } from '../../store/authStore'
 import { Input } from '../../components/ui/Input'
 import { Plus, Search } from 'lucide-react'
 
+import { ManageClientsModal } from '../../components/shared/ManageClientsModal'
+import { Users } from 'lucide-react'
+
 const STATUS_OPTS = ['active', 'on_hold', 'completed']
 
 export default function AdminProjects() {
@@ -19,6 +22,7 @@ export default function AdminProjects() {
   const { projects, loading } = useProjects()
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
+  const [isClientsModalOpen, setIsClientsModalOpen] = useState(false)
 
   const filtered = projects.filter(p => {
     const matchSearch = p.name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -33,14 +37,24 @@ export default function AdminProjects() {
         title="Projects"
         subtitle={`${projects.length} total`}
         action={isAdmin && (
-          <button
-            onClick={() => navigate('/admin/projects/new')}
-            className="flex items-center gap-1.5 bg-kala-red text-white text-sm font-medium px-4 py-2 rounded-xl hover:bg-kala-red-dark transition-all"
-          >
-            <Plus size={16} /> Add Project
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setIsClientsModalOpen(true)}
+              className="flex items-center gap-1.5 bg-white text-gray-700 border border-gray-200 text-sm font-medium px-4 py-2 rounded-xl hover:bg-gray-50 transition-all"
+            >
+              <Users size={16} /> Manage Clients
+            </button>
+            <button
+              onClick={() => navigate('/admin/projects/new')}
+              className="flex items-center gap-1.5 bg-kala-red text-white text-sm font-medium px-4 py-2 rounded-xl hover:bg-kala-red-dark transition-all"
+            >
+              <Plus size={16} /> Add Project
+            </button>
+          </div>
         )}
       />
+
+      <ManageClientsModal open={isClientsModalOpen} onClose={() => setIsClientsModalOpen(false)} />
 
       {/* Search + Filter */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6">
