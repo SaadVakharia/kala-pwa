@@ -184,12 +184,12 @@ export default function UserDetails() {
           
           <div className="flex-1 min-w-0">
             {isEditing ? (
-              <input
-                type="text"
-                value={form.fullName}
-                onChange={e => handleInputChange('fullName', e.target.value)}
-                className="text-2xl font-bold text-kala-dark bg-gray-50 border border-gray-200 rounded-lg px-3 py-1 mb-2 w-full max-w-sm focus:outline-none focus:ring-2 focus:ring-kala-red"
-              />
+                <input
+                  type="text"
+                  value={form.fullName}
+                  onChange={e => handleInputChange('fullName', e.target.value)}
+                  className="text-2xl font-bold text-kala-dark bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 mb-2 w-full max-w-sm focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all"
+                />
             ) : (
               <div className="flex items-center gap-3 mb-1.5">
                 <h2 className="text-2xl font-bold text-kala-dark truncate">{user.fullName}</h2>
@@ -205,7 +205,7 @@ export default function UserDetails() {
                     type="email"
                     value={form.email || ''}
                     onChange={e => handleInputChange('email', e.target.value)}
-                    className="bg-gray-50 border border-gray-200 rounded px-2 py-0.5 w-40 focus:outline-none focus:ring-1 focus:ring-kala-red"
+                    className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 w-48 text-sm focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all"
                     placeholder="Email"
                   />
                 ) : (
@@ -219,7 +219,7 @@ export default function UserDetails() {
                     type="tel"
                     value={form.phone}
                     onChange={e => handleInputChange('phone', e.target.value)}
-                    className="bg-gray-50 border border-gray-200 rounded px-2 py-0.5 w-32 focus:outline-none focus:ring-1 focus:ring-kala-red"
+                    className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 w-40 text-sm focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all"
                   />
                 ) : (
                   <span>{user.phone}</span>
@@ -243,23 +243,23 @@ export default function UserDetails() {
             
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-xs text-gray-400 font-medium mb-1 uppercase tracking-wider">Employee ID</p>
+                <p className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Employee ID</p>
                 {isEditing ? (
-                  <input type="text" value={form.employeeId || ''} readOnly className="w-full text-sm bg-gray-100 text-gray-500 border border-gray-200 rounded-lg px-3 py-2 cursor-not-allowed" title="Auto-generated ID cannot be edited" />
+                  <input type="text" value={form.employeeId || ''} readOnly className="w-full text-sm bg-gray-100 text-gray-500 border border-gray-200 rounded-xl px-3 py-2 cursor-not-allowed" title="Auto-generated ID cannot be edited" />
                 ) : (
                   <p className="text-sm font-semibold text-kala-dark">{user.employeeId || '—'}</p>
                 )}
               </div>
               <div className="flex flex-col gap-1">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Aadhar Card</p>
+                  <p className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Aadhar Card</p>
                   {(user.aadharUrl || form.aadharUrl) && (
                     <a href={user.aadharUrl || form.aadharUrl} target="_blank" rel="noreferrer" className="text-[10px] font-semibold text-kala-red hover:underline">View Document</a>
                   )}
                 </div>
                 {isEditing ? (
                   <>
-                    <input type="text" value={form.aadhar || ''} onChange={e => handleInputChange('aadhar', e.target.value.replace(/\D/g, '').slice(0, 12))} maxLength={12} className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-1" placeholder="Aadhar Number" />
+                    <input type="text" value={form.aadhar || ''} onChange={e => handleInputChange('aadhar', e.target.value.replace(/\D/g, '').slice(0, 12))} maxLength={12} className="w-full text-sm bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 mb-1 focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all" placeholder="Aadhar Number" />
                     <input type="file" accept="image/*,.pdf" onChange={e => setAadharFile(e.target.files[0])} className="text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200" />
                   </>
                 ) : (
@@ -268,14 +268,14 @@ export default function UserDetails() {
               </div>
               <div className="flex flex-col gap-1">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">PAN Card</p>
+                  <p className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">PAN Card</p>
                   {(user.panUrl || form.panUrl) && (
                     <a href={user.panUrl || form.panUrl} target="_blank" rel="noreferrer" className="text-[10px] font-semibold text-kala-red hover:underline">View Document</a>
                   )}
                 </div>
                 {isEditing ? (
                   <>
-                    <input type="text" value={form.pan || ''} onChange={e => handleInputChange('pan', e.target.value.toUpperCase().slice(0, 10))} maxLength={10} className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-1 uppercase" placeholder="PAN Number" />
+                    <input type="text" value={form.pan || ''} onChange={e => handleInputChange('pan', e.target.value.toUpperCase().slice(0, 10))} maxLength={10} className="w-full text-sm bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 mb-1 uppercase focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all" placeholder="PAN Number" />
                     <input type="file" accept="image/*,.pdf" onChange={e => setPanFile(e.target.files[0])} className="text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200" />
                   </>
                 ) : (
@@ -283,9 +283,9 @@ export default function UserDetails() {
                 )}
               </div>
               <div>
-                <p className="text-xs text-gray-400 font-medium mb-1 uppercase tracking-wider">Department</p>
+                <p className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Department</p>
                 {isEditing ? (
-                  <select value={form.department || ''} onChange={e => handleInputChange('department', e.target.value)} className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                  <select value={form.department || ''} onChange={e => handleInputChange('department', e.target.value)} className="w-full text-sm bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all">
                     <option value="Projects">Projects</option>
                     <option value="Sales">Sales</option>
                     <option value="HR">HR</option>
@@ -296,9 +296,9 @@ export default function UserDetails() {
                 )}
               </div>
               <div>
-                <p className="text-xs text-gray-400 font-medium mb-1 uppercase tracking-wider">User Type</p>
+                <p className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">User Type</p>
                 {isEditing ? (
-                  <select value={form.userType || 'Internal'} onChange={e => handleInputChange('userType', e.target.value)} className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                  <select value={form.userType || 'Internal'} onChange={e => handleInputChange('userType', e.target.value)} className="w-full text-sm bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all">
                     <option value="Internal">Internal</option>
                     <option value="External">External</option>
                   </select>
@@ -307,9 +307,9 @@ export default function UserDetails() {
                 )}
               </div>
               <div>
-                <p className="text-xs text-gray-400 font-medium mb-1 uppercase tracking-wider">Reporting To</p>
+                <p className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Reporting To</p>
                 {isEditing ? (
-                  <select value={form.reportingTo || ''} onChange={e => handleInputChange('reportingTo', e.target.value)} className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                  <select value={form.reportingTo || ''} onChange={e => handleInputChange('reportingTo', e.target.value)} className="w-full text-sm bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all">
                     <option value="">None</option>
                     {projectManagers.map(pm => (
                       <option key={pm.id} value={pm.fullName}>{pm.fullName}</option>
@@ -332,9 +332,9 @@ export default function UserDetails() {
             <div className="bg-gray-50 rounded-xl border border-gray-100 overflow-hidden shadow-sm">
               <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100">
                 <div className="flex-1">
-                  <p className="text-xs text-gray-400 font-medium mb-1 uppercase tracking-wider">System Role</p>
+                  <p className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">System Role</p>
                   {isEditing ? (
-                    <select value={form.role || ''} onChange={e => handleInputChange('role', e.target.value)} className="w-full sm:w-auto text-sm font-bold text-kala-dark bg-white border border-gray-200 rounded-lg px-3 py-2 focus:ring-1 focus:ring-kala-red focus:outline-none">
+                    <select value={form.role || ''} onChange={e => handleInputChange('role', e.target.value)} className="w-full sm:w-auto text-sm font-medium text-kala-dark bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-kala-red focus:outline-none focus:border-transparent transition-all cursor-pointer">
                       {Object.values(ROLES).map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
                     </select>
                   ) : (
@@ -351,7 +351,7 @@ export default function UserDetails() {
                   </label>
                 ) : (
                   <div className="flex flex-col items-end shrink-0">
-                    <p className="text-xs text-gray-400 font-medium mb-1 uppercase tracking-wider">Status</p>
+                    <p className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Status</p>
                     <Badge status={user.active !== false ? 'active' : 'inactive'} />
                   </div>
                 )}
@@ -360,7 +360,7 @@ export default function UserDetails() {
               {/* Registration Date */}
               <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 bg-white">
                 <div>
-                  <p className="text-xs text-gray-400 font-medium mb-1 uppercase tracking-wider">Registration Date</p>
+                  <p className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Registration Date</p>
                   <p className="text-sm font-medium text-kala-dark">{regDate}</p>
                 </div>
               </div>
@@ -368,7 +368,7 @@ export default function UserDetails() {
               {/* Assign Projects Section */}
               <div className="p-4 sm:p-5">
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-xs text-gray-400 font-medium uppercase tracking-wider flex items-center gap-2">
+                  <h4 className="block text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-2">
                     <MapPin size={14} className="text-kala-red" /> Assigned Projects
                   </h4>
                   {isEditing && (

@@ -171,8 +171,8 @@ export default function AdminProjects() {
 
           {/* Image Upload */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-kala-dark">
-              Project Photo <span className="text-gray-400 font-normal">(optional)</span>
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-0.5">
+              Project Photo <span className="text-gray-400 font-normal lowercase tracking-normal">(optional)</span>
             </label>
             {imagePreview ? (
               <div className="relative rounded-xl overflow-hidden h-36 bg-gray-100">
@@ -220,9 +220,9 @@ export default function AdminProjects() {
           ))}
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-kala-dark">Status</label>
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-0.5">Status</label>
             <select
-              className="w-full px-3 py-3 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium text-kala-dark focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all cursor-pointer"
               value={form.status}
               onChange={e => setForm(p => ({ ...p, status: e.target.value }))}
             >

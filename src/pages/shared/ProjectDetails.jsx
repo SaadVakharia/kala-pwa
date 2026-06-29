@@ -193,7 +193,7 @@ export default function ProjectDetails() {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="bg-white text-kala-dark px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 hover:bg-gray-50 transition-all"
+                  className="bg-white text-kala-dark px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 hover:bg-gray-50 transition-all border border-gray-200"
                 >
                   <ImagePlus size={18} /> {imagePreview ? 'Change Photo' : 'Add Photo'}
                 </button>
@@ -201,7 +201,7 @@ export default function ProjectDetails() {
                   <button
                     type="button"
                     onClick={clearImage}
-                    className="bg-red-500 text-white p-2 rounded-xl hover:bg-red-600 transition-all"
+                    className="bg-red-50 text-kala-red p-2 rounded-xl hover:bg-red-100 transition-all border border-red-100"
                   >
                     <X size={18} />
                   </button>
@@ -237,9 +237,9 @@ export default function ProjectDetails() {
             
             {isEditing && (
               <div className="w-40">
-                <label className="text-sm font-medium text-kala-dark mb-1.5 block">Status</label>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Status</label>
                 <select
-                  className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium text-kala-dark focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all cursor-pointer"
                   value={form.status || 'active'}
                   onChange={e => setForm({ ...form, status: e.target.value })}
                 >
@@ -256,7 +256,7 @@ export default function ProjectDetails() {
                 <MapPin size={20} />
               </div>
               <div className="flex-1">
-                <p className="text-sm text-gray-500 font-medium mb-1">Location</p>
+                <p className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Location</p>
                 {isEditing ? (
                   <Input 
                     value={form.location || ''} 
@@ -275,7 +275,7 @@ export default function ProjectDetails() {
                 <User size={20} />
               </div>
               <div className="flex-1">
-                <p className="text-sm text-gray-500 font-medium mb-1">Client Name</p>
+                <p className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Client Name</p>
                 {isEditing ? (
                   <Input 
                     value={form.client || ''} 
@@ -294,7 +294,7 @@ export default function ProjectDetails() {
                 <Calendar size={20} />
               </div>
               <div className="flex-1">
-                <p className="text-sm text-gray-500 font-medium mb-1">Start Date</p>
+                <p className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Start Date</p>
                 {isEditing ? (
                   <Input 
                     type="date"
@@ -313,7 +313,7 @@ export default function ProjectDetails() {
                 <Calendar size={20} />
               </div>
               <div className="flex-1">
-                <p className="text-sm text-gray-500 font-medium mb-1">End Date</p>
+                <p className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">End Date</p>
                 {isEditing ? (
                   <Input 
                     type="date"

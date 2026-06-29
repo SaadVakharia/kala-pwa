@@ -17,7 +17,7 @@ export const Input = ({
   return (
     <div className={`flex flex-col gap-1.5 ${containerClassName}`}>
       {label && (
-        <label className="text-sm font-medium text-kala-dark">
+        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-0.5">
           {label}
         </label>
       )}
@@ -40,8 +40,8 @@ export const Input = ({
           onChange={onChange}
           autoComplete={autoComplete}
           className={`
-            w-full py-3 px-4 rounded-xl border bg-white text-kala-dark text-sm
-            placeholder:text-gray-400
+            w-full py-3 px-4 rounded-xl border bg-gray-50 text-kala-dark text-sm font-medium
+            placeholder:text-gray-400 placeholder:font-normal
             focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent
             transition-all duration-150
             ${prefix ? 'pl-24' : LeftIcon ? 'pl-11' : 'pl-4'}
