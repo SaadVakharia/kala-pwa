@@ -23,11 +23,11 @@ const QUICK_ACTIONS = [
 
 export default function EmployeeDashboard() {
   const navigate = useNavigate()
-  const { user, role } = useAuthStore()
+  const { user, role, fullName } = useAuthStore()
   const { projects, loading } = useProjects()
   const [search, setSearch] = useState('')
 
-  const name = user?.displayName || user?.phoneNumber || 'Employee'
+  const name = fullName || user?.displayName || user?.phoneNumber || 'Employee'
 
   const filtered = projects.filter(p =>
     p.name?.toLowerCase().includes(search.toLowerCase()) ||

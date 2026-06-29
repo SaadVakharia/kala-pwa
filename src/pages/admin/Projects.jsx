@@ -1,10 +1,11 @@
 import { useState, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useProjects } from '../../hooks/useProjects'
 import { PageHeader } from '../../components/shared/PageHeader'
 import { ProjectCard } from '../../components/shared/ProjectCard'
 import { EmptyState } from '../../components/shared/EmptyState'
 import { Modal } from '../../components/shared/Modal'
+import { useAuthStore, ROLES } from '../../store/authStore'
 import { Input } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
 import { addDocument } from '../../api/firestore'
@@ -16,6 +17,10 @@ const STATUS_OPTS = ['active', 'on_hold', 'completed']
 
 export default function AdminProjects() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const { role } = useAuthStore()
+  const isAdmin = role === ROLES.ADMIN
+
   const { projects, loading } = useProjects()
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
@@ -88,14 +93,14 @@ export default function AdminProjects() {
       <PageHeader
         title="Projects"
         subtitle={`${projects.length} total`}
-        action={
+        action={isAdmin && (
           <button
             onClick={() => setModalOpen(true)}
             className="flex items-center gap-1.5 bg-kala-red text-white text-sm font-medium px-4 py-2 rounded-xl hover:bg-kala-red-dark transition-all"
           >
             <Plus size={16} /> Add Project
           </button>
-        }
+        )}
       />
 
       {/* Search + Filter */}
@@ -129,8 +134,8 @@ export default function AdminProjects() {
         <EmptyState
           icon={MapPin}
           title="No projects found"
-          subtitle={search ? 'Try a different search term' : 'Add your first project to get started'}
-          action={!search && (
+          subtitle={search ? 'Try a different search term' : (isAdmin ? 'Add your first project to get started' : 'No projects available')}
+          action={!search && isAdmin && (
             <button onClick={() => setModalOpen(true)} className="text-sm bg-kala-red text-white px-4 py-2 rounded-xl">
               Add Project
             </button>
@@ -142,7 +147,10 @@ export default function AdminProjects() {
             <ProjectCard
               key={p.id}
               project={p}
-              onClick={() => navigate(`/admin/projects/${p.id}`)}
+              onClick={() => {
+                const basePath = location.pathname.endsWith('/') ? location.pathname.slice(0, -1) : location.pathname;
+                navigate(`${basePath}/${p.id}`)
+              }}
             />
           ))}
         </div>

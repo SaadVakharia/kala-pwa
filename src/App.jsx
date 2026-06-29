@@ -4,6 +4,7 @@ import { ProtectedRoute } from './routes/ProtectedRoute'
 import AppLayout from './layouts/AppLayout'
 import LoginPage from './pages/auth/LoginPage'
 import UnauthorizedPage from './pages/shared/UnauthorizedPage'
+import ProjectDetails from './pages/shared/ProjectDetails'
 
 // Admin
 import AdminDashboard from './pages/admin/Dashboard'
@@ -51,6 +52,7 @@ export default function App() {
         {/* Admin */}
         <Route path="/admin" element={<Guard roles={ADMIN_ROLES}><AdminDashboard /></Guard>} />
         <Route path="/admin/projects" element={<Guard roles={ADMIN_ROLES}><AdminProjects /></Guard>} />
+        <Route path="/admin/projects/:id" element={<Guard roles={ADMIN_ROLES}><ProjectDetails /></Guard>} />
         <Route path="/admin/users" element={<Guard roles={ADMIN_ROLES}><AdminUsers /></Guard>} />
         <Route path="/admin/users/create" element={<Guard roles={ADMIN_ROLES}><CreateUser /></Guard>} />
         <Route path="/admin/users/:id" element={<Guard roles={ADMIN_ROLES}><UserDetails /></Guard>} />
@@ -59,11 +61,14 @@ export default function App() {
         {/* Employee */}
         <Route path="/employee" element={<Guard roles={EMPLOYEE_ROLES}><EmployeeDashboard /></Guard>} />
         <Route path="/employee/projects" element={<Guard roles={EMPLOYEE_ROLES}><AdminProjects /></Guard>} />
+        <Route path="/employee/projects/:id" element={<Guard roles={EMPLOYEE_ROLES}><ProjectDetails /></Guard>} />
         <Route path="/employee/reports" element={<Guard roles={EMPLOYEE_ROLES}><AdminReports /></Guard>} />
         <Route path="/employee/users" element={<Guard roles={EMPLOYEE_ROLES}><AdminUsers /></Guard>} />
 
         {/* Client */}
         <Route path="/client" element={<Guard roles={CLIENT_ROLES}><ClientDashboard /></Guard>} />
+        <Route path="/client/projects" element={<Guard roles={CLIENT_ROLES}><AdminProjects /></Guard>} />
+        <Route path="/client/projects/:id" element={<Guard roles={CLIENT_ROLES}><ProjectDetails /></Guard>} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
