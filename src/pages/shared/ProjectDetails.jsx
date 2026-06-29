@@ -445,7 +445,7 @@ export default function ProjectDetails() {
                       <button 
                         type="button" 
                         onClick={() => removeSiteFile(index)}
-                        className="absolute top-2 right-2 w-6 h-6 bg-red-100 text-kala-red rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                        className="absolute top-2 right-2 w-6 h-6 bg-red-100 text-kala-red rounded-full flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10"
                       >
                         <X size={12} />
                       </button>
@@ -504,7 +504,7 @@ export default function ProjectDetails() {
 
       {/* Action Bar */}
       {isEditing && (
-        <div className="sticky bottom-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200 py-3 sm:py-4 flex flex-col sm:flex-row gap-3 mt-8 -mx-5 px-5 sm:-mx-6 sm:px-6 md:-mx-8 md:px-8 justify-end shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
+        <div className="flex flex-col sm:flex-row gap-3 mt-8 justify-end">
           <Button type="button" variant="outline" className="py-3.5 sm:py-2.5 sm:w-32 text-base sm:text-sm border-gray-200 order-2 sm:order-1" onClick={handleCancel} disabled={saving}>
             Cancel
           </Button>
