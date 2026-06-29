@@ -19,7 +19,7 @@ export function AssignProjectsModal({ open, onClose, projects, initialAssignedId
 
   const filteredProjects = projects.filter(p => {
     const matchesSearch = (p.name || p.id).toLowerCase().includes(search.toLowerCase())
-    
+
     let matchesStatus = true
     if (statusFilter !== 'All') {
       const pStatus = (p.status || 'active').toLowerCase()
@@ -64,15 +64,15 @@ export function AssignProjectsModal({ open, onClose, projects, initialAssignedId
         <div className="flex gap-2 mb-4 shrink-0">
           <div className="relative flex-1">
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input 
-              type="text" 
-              placeholder="Search projects..." 
+            <input
+              type="text"
+              placeholder="Search projects..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-kala-red text-sm"
             />
           </div>
-          <select 
+          <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-kala-red bg-white cursor-pointer"
@@ -88,13 +88,13 @@ export function AssignProjectsModal({ open, onClose, projects, initialAssignedId
         {filteredProjects.length > 0 && (
           <div className="mb-3 pb-3 border-b border-gray-100 shrink-0">
             <label className="flex items-center gap-2 cursor-pointer w-max">
-              <input 
+              <input
                 type="checkbox"
                 checked={allFilteredSelected}
                 onChange={handleSelectAll}
                 className="rounded border-gray-300 text-kala-red focus:ring-kala-red"
               />
-              <span className="text-sm font-semibold text-kala-dark">Select All Filtered Projects</span>
+              <span className="text-sm font-semibold text-kala-dark">Select All Projects</span>
             </label>
           </div>
         )}

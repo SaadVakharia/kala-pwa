@@ -48,10 +48,10 @@ function isActive(item, pathname) {
 export default function AppLayout() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { role, user, logout } = useAuthStore()
+  const { role, user, fullName, logout } = useAuthStore()
 
   const navItems = NAV_CONFIG[role] || []
-  const initials = user?.displayName?.[0]?.toUpperCase() || user?.phoneNumber?.[3]?.toUpperCase() || 'U'
+  const initials = fullName?.[0]?.toUpperCase() || user?.displayName?.[0]?.toUpperCase() || user?.phoneNumber?.[3]?.toUpperCase() || 'U'
 
   const handleLogout = async () => {
     await logout()
@@ -128,7 +128,7 @@ export default function AppLayout() {
               <span className="text-white text-xs font-bold">{initials}</span>
             </div>
             <div className="hidden xl:block min-w-0">
-              <p className="text-white text-xs font-medium truncate">{user?.phoneNumber || user?.email}</p>
+              <p className="text-white text-xs font-medium truncate">{fullName || user?.phoneNumber || user?.email}</p>
               <p className="text-gray-400 text-[10px] truncate">{ROLE_LABELS[role]}</p>
             </div>
           </div>

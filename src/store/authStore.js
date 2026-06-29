@@ -66,10 +66,11 @@ async function checkProfile(user) {
     const hasPassword = !!user.email
 
     if (snap.exists()) {
+      const data = snap.data()
       if (!hasPassword) {
-         return { needsSetup: true, role: snap.data().role, isExisting: true }
+         return { needsSetup: true, role: data.role, isExisting: true, fullName: data.fullName }
       }
-      return { needsSetup: false, role: snap.data().role || 'junior_technician' }
+      return { needsSetup: false, role: data.role || 'junior_technician', fullName: data.fullName }
     }
 
     // --- INITIAL USER BOOTSTRAP ---
@@ -95,7 +96,7 @@ async function checkProfile(user) {
           const adminProfileDoc = querySnapshot.docs[0]
           const adminProfileData = adminProfileDoc.data()
           
-          return { needsSetup: true, role: adminProfileData.role || 'junior_technician', adminProfileData, oldDocId: adminProfileDoc.id }
+          return { needsSetup: true, role: adminProfileData.role || 'junior_technician', adminProfileData, oldDocId: adminProfileDoc.id, fullName: adminProfileData.fullName }
         }
       } catch (e) {
         console.warn("Could not query profiles. Rules might be restricting this:", e)
@@ -113,6 +114,7 @@ export const useAuthStore = create(
     (set, get) => ({
       user: null,
       role: null,
+      fullName: null,
       loading: false,
       error: null,
       confirmationResult: null,
@@ -177,7 +179,7 @@ export const useAuthStore = create(
              set({ confirmationResult: null, loading: false })
              return { success: true, needsSetup: true, setupData: profileCheck }
           } else {
-             set({ user: result.user, role: profileCheck.role, confirmationResult: null, loading: false })
+             set({ user: result.user, role: profileCheck.role, fullName: profileCheck.fullName, confirmationResult: null, loading: false })
              return { success: true, role: profileCheck.role }
           }
         } catch (err) {
@@ -232,7 +234,7 @@ export const useAuthStore = create(
           }
 
           // 3. Log them in completely
-          set({ user: currentUser, role: setupData.role, loading: false })
+          set({ user: currentUser, role: setupData.role, fullName, loading: false })
           return { success: true, role: setupData.role }
         } catch (err) {
           console.error('Setup Error:', err)
@@ -247,9 +249,9 @@ export const useAuthStore = create(
         try {
           const email = `${phone.replace('+', '')}@kalafield.app`
           const result = await signInWithEmailAndPassword(auth, email, password)
-          const role = await checkProfile(result.user).then(res => res.role)
-          set({ user: result.user, role, loading: false })
-          return { success: true, role }
+          const profileInfo = await checkProfile(result.user)
+          set({ user: result.user, role: profileInfo.role, fullName: profileInfo.fullName, loading: false })
+          return { success: true, role: profileInfo.role }
         } catch (err) {
           console.error('Password Login Error:', err)
           set({ error: `Login failed: ${err.message}`, loading: false })
@@ -260,7 +262,7 @@ export const useAuthStore = create(
       // ── LOGOUT ──
       logout: async () => {
         await signOut(auth)
-        set({ user: null, role: null, error: null, confirmationResult: null })
+        set({ user: null, role: null, fullName: null, error: null, confirmationResult: null })
       },
 
       clearError: () => set({ error: null }),
@@ -268,7 +270,7 @@ export const useAuthStore = create(
     }),
     {
       name: 'kalafield-auth',
-      partialize: (state) => ({ user: state.user, role: state.role }),
+      partialize: (state) => ({ user: state.user, role: state.role, fullName: state.fullName }),
     }
   )
 )
