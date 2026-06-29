@@ -387,11 +387,11 @@ export default function CreateUser() {
         />
 
         {/* Actions */}
-        <div className="sticky bottom-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200 py-3 sm:py-4 grid grid-cols-2 sm:flex sm:flex-row gap-2 sm:gap-3 mt-8 -mx-5 px-5 sm:-mx-6 sm:px-6 md:-mx-8 md:px-8 justify-end shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
-          <Button type="button" variant="outline" className="w-full sm:w-32 py-2.5 text-sm border-gray-200" onClick={() => navigate(-1)}>
+        <div className="flex flex-col sm:flex-row gap-3 mt-4 sm:justify-end">
+          <Button type="button" variant="outline" className="py-3.5 sm:py-2.5 sm:w-32 text-base sm:text-sm border-gray-200 order-2 sm:order-1" onClick={() => navigate(-1)}>
             Cancel
           </Button>
-          <Button type="submit" loading={saving} className="w-full sm:w-40 py-2.5 text-sm shadow-md">
+          <Button type="submit" loading={saving} className="py-3.5 sm:py-2.5 sm:w-40 text-base sm:text-sm shadow-md order-1 sm:order-2">
             <User size={18} className="mr-2 hidden sm:block" /> Create User
           </Button>
         </div>
