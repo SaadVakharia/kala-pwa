@@ -8,7 +8,7 @@ import { useAuthStore, ROLES } from '../../store/authStore'
 import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/shared/Badge'
 import { 
-  ArrowLeft, Building2, MapPin, Edit2, Save, X, ImagePlus, User, Calendar, IndianRupee, FileText, CheckCircle2, Plus, Trash2
+  ArrowLeft, Building2, MapPin, Edit2, Save, X, ImagePlus, User, Calendar, IndianRupee, FileText, CheckCircle2, Plus, Trash2, Upload
 } from 'lucide-react'
 
 const STATUS_OPTS = ['active', 'on_hold', 'completed']
