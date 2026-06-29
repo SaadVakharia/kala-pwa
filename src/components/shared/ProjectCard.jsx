@@ -65,7 +65,7 @@ export function ProjectCard({ project, onClick, selectable, selected, onToggle }
     </>
   )
 
-  const className = `bg-white rounded-2xl shadow-sm border ${isSelected ? 'border-kala-red ring-1 ring-kala-red' : 'border-kala-border hover:shadow-md'} transition-all w-full flex items-center p-3 gap-4 cursor-pointer ${!selectable ? 'active:scale-[0.99]' : ''}`
+  const className = `bg-white rounded-2xl sm:rounded-3xl shadow-sm border ${isSelected ? 'border-kala-red ring-1 ring-kala-red' : 'border-kala-border hover:shadow-md hover:border-gray-300'} transition-all w-full flex items-center p-4 sm:p-5 gap-4 cursor-pointer ${!selectable ? 'active:scale-[0.99]' : ''}`
 
   if (selectable) {
     return (

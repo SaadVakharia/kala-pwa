@@ -113,7 +113,7 @@ export default function AdminProjects() {
       />
 
       {/* Search + Filter */}
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6">
         <Input
           type="text"
           placeholder="Search projects..."
@@ -125,7 +125,7 @@ export default function AdminProjects() {
         <select
           value={filterStatus}
           onChange={e => setFilterStatus(e.target.value)}
-          className="px-3 py-3 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all"
+          className="px-3 py-3 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all sm:w-auto w-full"
         >
           <option value="all">All</option>
           {STATUS_OPTS.map(s => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}
@@ -134,9 +134,9 @@ export default function AdminProjects() {
 
       {/* List */}
       {loading ? (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3 sm:gap-4">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="bg-white rounded-2xl h-20 animate-pulse border border-kala-border" />
+            <div key={i} className="bg-white rounded-2xl h-24 animate-pulse border border-kala-border" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
@@ -151,7 +151,7 @@ export default function AdminProjects() {
           )}
         />
       ) : (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3 sm:gap-4">
           {filtered.map(p => (
             <ProjectCard
               key={p.id}

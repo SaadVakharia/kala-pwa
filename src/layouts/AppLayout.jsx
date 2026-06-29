@@ -169,8 +169,8 @@ export default function AppLayout() {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto">
-          <div className="max-w-6xl mx-auto px-4 py-6 w-full">
+        <main className="flex-1 overflow-y-auto bg-gray-50/30">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-8 w-full">
             <Outlet />
           </div>
         </main>

@@ -40,13 +40,13 @@ export default function AdminReports() {
       <div className="flex flex-col gap-6">
         {REPORT_TYPES.map(group => (
           <div key={group.group}>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{group.group}</p>
-            <div className="flex flex-col gap-2">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-1">{group.group}</p>
+            <div className="flex flex-col gap-3 sm:gap-4">
               {group.items.map(item => (
                 <button
                   key={item.label}
                   onClick={() => navigate(item.path)}
-                  className="bg-white rounded-2xl p-4 shadow-card border border-kala-border flex items-center gap-4 hover:shadow-md transition-all text-left w-full active:scale-95"
+                  className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm border border-kala-border flex items-center gap-4 hover:shadow-md hover:border-gray-300 transition-all text-left w-full active:scale-[0.99]"
                 >
                   <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${item.color}`}>
                     <item.icon size={20} />

@@ -38,7 +38,7 @@ export default function AdminUsers() {
       />
 
       {/* Search + Filter */}
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6">
         <Input
           type="text"
           placeholder="Search by name or phone..."
@@ -50,7 +50,7 @@ export default function AdminUsers() {
         <select
           value={filterRole}
           onChange={e => setFilterRole(e.target.value)}
-          className="px-3 py-3 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all"
+          className="px-3 py-3 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all sm:w-auto w-full"
         >
           <option value="all">All Roles</option>
           {Object.values(ROLES).map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
@@ -59,18 +59,18 @@ export default function AdminUsers() {
 
       {/* List */}
       {loading ? (
-        <div className="flex flex-col gap-2">
-          {[...Array(5)].map((_, i) => <div key={i} className="bg-white rounded-2xl h-16 animate-pulse border border-kala-border" />)}
+        <div className="flex flex-col gap-3">
+          {[...Array(5)].map((_, i) => <div key={i} className="bg-white rounded-2xl h-20 animate-pulse border border-kala-border" />)}
         </div>
       ) : filtered.length === 0 ? (
         <EmptyState icon={Users} title="No users found" subtitle="Users appear here after they log in for the first time" />
       ) : (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3 sm:gap-4">
           {filtered.map(u => (
             <button
               key={u.id}
               onClick={() => navigate(`/admin/users/${u.id}`)}
-              className="bg-white rounded-2xl p-4 shadow-card border border-kala-border flex items-center gap-3 hover:shadow-md transition-all text-left w-full"
+              className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm border border-kala-border flex items-center gap-4 hover:shadow-md hover:border-gray-300 transition-all text-left w-full"
             >
               {/* Avatar */}
               <div className="w-10 h-10 rounded-full bg-kala-red flex-shrink-0 flex items-center justify-center">
