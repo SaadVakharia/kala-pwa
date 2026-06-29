@@ -235,22 +235,43 @@ export default function CreateUser() {
               <MapPin size={18} className="text-gray-400 flex-shrink-0" />
               <span className="text-sm text-kala-dark font-medium">Assign Projects</span>
             </div>
-            <div className="pl-8 flex flex-col gap-2 max-h-48 overflow-y-auto">
-              {projects.length === 0 ? (
-                <p className="text-xs text-gray-500">No projects found.</p>
-              ) : (
-                projects.map(proj => (
-                  <label key={proj.id} className="flex items-center gap-2 cursor-pointer">
+            <div className="pl-8">
+              {projects.length > 0 && (
+                <div className="mb-3">
+                  <label className="flex items-center gap-2 cursor-pointer">
                     <input 
                       type="checkbox"
-                      checked={form.assignProjects.includes(proj.id)}
-                      onChange={() => handleProjectToggle(proj.id)}
+                      checked={form.assignProjects?.length === projects.length}
+                      onChange={(e) => {
+                         if (e.target.checked) {
+                            setForm(prev => ({ ...prev, assignProjects: projects.map(p => p.id) }));
+                         } else {
+                            setForm(prev => ({ ...prev, assignProjects: [] }));
+                         }
+                      }}
                       className="rounded border-gray-300 text-kala-red focus:ring-kala-red"
                     />
-                    <span className="text-sm text-gray-600">{proj.name || proj.id}</span>
+                    <span className="text-sm font-semibold text-kala-dark">Select All Projects</span>
                   </label>
-                ))
+                </div>
               )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-48 overflow-y-auto pr-2">
+                {projects.length === 0 ? (
+                  <p className="text-xs text-gray-500">No projects found.</p>
+                ) : (
+                  projects.map(proj => (
+                    <label key={proj.id} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors">
+                      <input 
+                        type="checkbox"
+                        checked={(form.assignProjects || []).includes(proj.id)}
+                        onChange={() => handleProjectToggle(proj.id)}
+                        className="rounded border-gray-300 text-kala-red focus:ring-kala-red flex-shrink-0"
+                      />
+                      <span className="text-sm text-gray-600 truncate" title={proj.name || proj.id}>{proj.name || proj.id}</span>
+                    </label>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         </div>

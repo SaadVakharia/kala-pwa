@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { doc, getDoc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, getDoc, setDoc, deleteDoc, serverTimestamp, collection, getDocs } from 'firebase/firestore'
 import { db, uploadFile } from '../../api/firebase'
 import { useAuthStore, ROLE_LABELS, ROLES } from '../../store/authStore'
 import { PageHeader } from '../../components/shared/PageHeader'
@@ -37,9 +37,10 @@ export default function UserDetails() {
   
   const [photo, setPhoto] = useState(null)
   const [photoPreview, setPhotoPreview] = useState(null)
+  const [projects, setProjects] = useState([])
 
   useEffect(() => {
-    async function fetchUser() {
+    async function fetchData() {
       try {
         const snap = await getDoc(doc(db, 'profiles', id))
         if (snap.exists()) {
@@ -49,14 +50,29 @@ export default function UserDetails() {
         } else {
           setUser(null)
         }
+        
+        const projSnap = await getDocs(collection(db, 'projects'))
+        const projs = projSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+        setProjects(projs)
       } catch (err) {
         console.error(err)
       } finally {
         setLoading(false)
       }
     }
-    fetchUser()
+    fetchData()
   }, [id])
+
+  const handleProjectToggle = (projectId) => {
+    setForm(prev => {
+      const current = prev.assignProjects || []
+      if (current.includes(projectId)) {
+        return { ...prev, assignProjects: current.filter(id => id !== projectId) }
+      } else {
+        return { ...prev, assignProjects: [...current, projectId] }
+      }
+    })
+  }
 
   const handlePhotoChange = (e) => {
     const file = e.target.files?.[0]
@@ -361,6 +377,71 @@ export default function UserDetails() {
                 {regDate}
               </p>
             </div>
+            
+            {/* Assign Projects Section */}
+            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+              <h4 className="text-xs text-gray-400 font-medium mb-3 uppercase tracking-wider flex items-center gap-2">
+                <MapPin size={14} className="text-kala-red" /> Assigned Projects
+              </h4>
+              
+              {isEditing ? (
+                <div>
+                  {projects.length > 0 && (
+                    <div className="mb-3 border-b border-gray-200 pb-2">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input 
+                          type="checkbox"
+                          checked={form.assignProjects?.length === projects.length}
+                          onChange={(e) => {
+                             if (e.target.checked) {
+                                setForm(prev => ({ ...prev, assignProjects: projects.map(p => p.id) }));
+                             } else {
+                                setForm(prev => ({ ...prev, assignProjects: [] }));
+                             }
+                          }}
+                          className="rounded border-gray-300 text-kala-red focus:ring-kala-red"
+                        />
+                        <span className="text-xs font-semibold text-kala-dark">Select All Projects</span>
+                      </label>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-48 overflow-y-auto pr-2">
+                    {projects.length === 0 ? (
+                      <p className="text-xs text-gray-500">No projects found.</p>
+                    ) : (
+                      projects.map(proj => (
+                        <label key={proj.id} className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-1 rounded transition-colors">
+                          <input 
+                            type="checkbox"
+                            checked={(form.assignProjects || []).includes(proj.id)}
+                            onChange={() => handleProjectToggle(proj.id)}
+                            className="rounded border-gray-300 text-kala-red focus:ring-kala-red flex-shrink-0"
+                          />
+                          <span className="text-xs text-gray-600 truncate" title={proj.name || proj.id}>{proj.name || proj.id}</span>
+                        </label>
+                      ))
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {(!user.assignProjects || user.assignProjects.length === 0) ? (
+                    <span className="text-xs text-gray-500">No projects assigned</span>
+                  ) : (
+                    user.assignProjects.map(projId => {
+                      const proj = projects.find(p => p.id === projId)
+                      return (
+                        <div key={projId} className="bg-white border border-gray-200 px-2 py-1 rounded-md text-xs font-medium text-gray-700 shadow-sm flex items-center gap-1.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-kala-red"></div>
+                          {proj ? proj.name || proj.id : projId}
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
+              )}
+            </div>
+            
           </div>
           
         </div>
