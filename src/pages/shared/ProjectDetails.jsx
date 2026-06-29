@@ -5,16 +5,16 @@ import { db, storage, uploadFile } from '../../api/firebase'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import imageCompression from 'browser-image-compression'
 import { useAuthStore, ROLES } from '../../store/authStore'
-import { Input } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/shared/Badge'
 import { 
-  ArrowLeft, Building2, MapPin, Edit2, Save, X, ImagePlus, User, Calendar, IndianRupee, FileText, CheckCircle2, Plus, Trash2, Download
+  ArrowLeft, Building2, MapPin, Edit2, Save, X, ImagePlus, User, Calendar, IndianRupee, FileText, CheckCircle2, Plus, Trash2
 } from 'lucide-react'
 
 const STATUS_OPTS = ['active', 'on_hold', 'completed']
 
 export default function ProjectDetails() {
+  const [imageLoading, setImageLoading] = useState(true)
   const { id } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
@@ -213,7 +213,16 @@ export default function ProjectDetails() {
           <div className="w-[200px] h-[200px] sm:w-[240px] sm:h-[240px]">
             {imagePreview ? (
               <div className="relative rounded-[2rem] overflow-hidden w-full h-full bg-gray-100 border-4 border-white shadow-xl">
-                <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                {imageLoading && (
+                  <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+                )}
+                <img 
+                  src={imagePreview} 
+                  alt="Preview" 
+                  className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoading ? 'opacity-0' : 'opacity-100'}`} 
+                  onLoad={() => setImageLoading(false)}
+                  onError={() => setImageLoading(false)}
+                />
                 {isEditing && (
                   <button
                     type="button"

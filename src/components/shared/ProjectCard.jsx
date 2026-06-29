@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { MapPin, ArrowRight, Building2, IndianRupee } from 'lucide-react'
 import { Badge } from './Badge'
 
 export function ProjectCard({ project, onClick, selectable, selected, onToggle }) {
+  const [imageLoading, setImageLoading] = useState(true)
   const isSelected = selectable ? selected : false;
 
   const handleClick = (e) => {

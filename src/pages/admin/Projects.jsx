@@ -6,10 +6,8 @@ import { ProjectCard } from '../../components/shared/ProjectCard'
 import { EmptyState } from '../../components/shared/EmptyState'
 import { useAuthStore, ROLES } from '../../store/authStore'
 import { Input } from '../../components/ui/Input'
-import { Plus, Search } from 'lucide-react'
-
 import { ManageClientsModal } from '../../components/shared/ManageClientsModal'
-import { Users } from 'lucide-react'
+import { Plus, Search, Users } from 'lucide-react'
 
 const STATUS_OPTS = ['active', 'on_hold', 'completed']
 

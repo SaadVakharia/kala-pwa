@@ -17,11 +17,11 @@ src/
 ├── api/             # Firebase and Firestore API connections
 ├── assets/          # Static media and graphics
 ├── components/      # UI components
-│   ├── shared/      # Cards, badges, modals, empty states
+│   ├── shared/      # Cards, badges, modals, empty states (e.g. ManageClientsModal)
 │   └── ui/          # Standardized fields: Input, Button, OtpInput
 ├── hooks/           # Real-time state hooks for Firestore collections
 ├── layouts/         # Base AppLayout routing shell
-├── pages/           # Route pages categorized by role access
+├── pages/           # Route pages categorized by role access (e.g. CreateProject, ProjectDetails)
 ├── routes/          # Protected routing logic
 ├── store/           # Auth and session state (Zustand)
 └── utils/           # Shared helper functions (formatting, date-based greets)
@@ -41,11 +41,17 @@ To maintain UI/UX consistency, the workspace enforces the use of core design com
    - Custom 6-digit OTP verification interface.
    - Encapsulates focus transitions, delete handling, and clipboard paste functionality.
 
-## Shared Helpers & Configurations
+## Core Features & Updates
 
-- **Centralized Roles Config**: User labels (`ROLE_LABELS`) are exported from the auth store (`/src/store/authStore.js`) as a single source of truth.
-- **Phone Formatting**: Standardized number parsing (`formatPhone`) is exported from `/src/utils/helpers.js`.
-- **Greeting Banner**: Time-of-day greetings (`greeting()`) are unified across admin and employee dashboards via `/src/utils/helpers.js`.
+### 1. Unified Client Management
+- **Manage Clients Dashboard**: Admins can now manage all client entities directly from the **Projects** list. Includes quick add, inline renaming, and safe deletion.
+- **Project Reference Check**: Deleting a client automatically scans the `projects` collection and triggers a prominent warning on the UI showing the number of attached projects to prevent broken data relationships.
+
+### 2. Standalone Create/Edit Site Page
+- **Detailed Form**: Replaced the project creator modal with a standalone stacked-card page (`/admin/projects/new`).
+- **Project Value**: Replaced the panel-count model with a monetary project value field in Crores (Cr) with native Indian Rupee (₹) styling.
+- **Multiple Site Files**: Supports uploading multiple PDF, DOC, or image files. Each file can be custom-named, stored in Firebase, and listed inside `ProjectDetails` as a downloadable file element.
+- **Responsive Header**: Redesigned header layouts that adapt gracefully to mobile viewport heights by wrapping actions (like "Manage Clients" and "Add Project") rather than overflowing.
 
 ---
 
@@ -75,8 +81,9 @@ VITE_FIREBASE_APP_ID=
 ### Firestore Collections
 ```
 profiles    → auto-created on first login { fullName, phone, role }
-projects    → { name, location, client, status, startDate, endDate }
-issues      → { status, title, description, siteId, reportedBy }
+clients     → store clients { name, createdAt, updatedAt }
+projects    → store sites { name, clientId, location, status, projectValue, siteFiles, startDate, endDate }
+issues      → store site tickets { status, title, description, siteId, reportedBy }
 ```
 
 ### Assign a Role (Firestore)

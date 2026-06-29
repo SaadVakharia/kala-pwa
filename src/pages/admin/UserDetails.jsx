@@ -129,7 +129,11 @@ export default function UserDetails() {
   }
 
   if (loading) {
-    return <div className="p-8 text-center text-gray-500">Loading user details...</div>
+    return (
+      <div className="flex-1 flex items-center justify-center min-h-[400px]">
+        <div className="w-8 h-8 border-4 border-kala-red border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
   }
 
   if (!user) {

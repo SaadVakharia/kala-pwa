@@ -4,7 +4,6 @@ import { collection, getDocs, addDoc, serverTimestamp } from 'firebase/firestore
 import { db, storage, uploadFile } from '../../api/firebase'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import imageCompression from 'browser-image-compression'
-import { Input } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
 import { ArrowLeft, Building2, MapPin, IndianRupee, ImagePlus, X, FileText, Plus, Upload, CheckCircle2 } from 'lucide-react'
 
