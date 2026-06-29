@@ -133,7 +133,14 @@ export default function UserDetails() {
   }
 
   if (!user) {
-    return (
+    return <div className="p-8 text-center text-gray-500">User not found</div>
+  }
+
+  const regDate = user.createdAt ? new Date(user.createdAt.seconds * 1000).toLocaleString('en-GB', {
+    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+  }) : 'Unknown'
+
+  return (
     <div className="max-w-3xl mx-auto pb-12 flex flex-col gap-6">
       {/* Header */}
       <div className="flex items-center justify-between">

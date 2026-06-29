@@ -125,6 +125,23 @@ export default function ProjectDetails() {
 
   if (loading) {
     return (
+      <div className="flex-1 flex items-center justify-center min-h-[400px]">
+        <div className="w-8 h-8 border-4 border-kala-red border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (!project) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <Building2 size={48} className="text-gray-300" />
+        <h2 className="text-xl font-bold text-gray-700">Project Not Found</h2>
+        <Button variant="outline" onClick={handleBack}>Go Back</Button>
+      </div>
+    )
+  }
+
+  return (
     <div className="max-w-3xl mx-auto flex flex-col gap-6 pb-12">
       {/* Header */}
       <div className="flex items-center justify-between">
