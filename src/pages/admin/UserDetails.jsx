@@ -38,6 +38,8 @@ export default function UserDetails() {
   
   const [photo, setPhoto] = useState(null)
   const [photoPreview, setPhotoPreview] = useState(null)
+  const [aadharFile, setAadharFile] = useState(null)
+  const [panFile, setPanFile] = useState(null)
   const [projects, setProjects] = useState([])
   const [projectManagers, setProjectManagers] = useState([])
   const [isProjectsModalOpen, setIsProjectsModalOpen] = useState(false)
@@ -98,9 +100,21 @@ export default function UserDetails() {
         photoUrl = await uploadFile(`profiles/${id}-${Date.now()}`, photo)
       }
 
+      let aadharUrl = form.aadharUrl !== undefined ? form.aadharUrl : null
+      if (aadharFile) {
+        aadharUrl = await uploadFile(`documents/${id}-aadhar-${Date.now()}`, aadharFile)
+      }
+
+      let panUrl = form.panUrl !== undefined ? form.panUrl : null
+      if (panFile) {
+        panUrl = await uploadFile(`documents/${id}-pan-${Date.now()}`, panFile)
+      }
+
       const updatedData = {
         ...form,
         photoUrl,
+        aadharUrl,
+        panUrl,
         updatedAt: serverTimestamp()
       }
 
@@ -117,6 +131,8 @@ export default function UserDetails() {
       setIsEditing(false)
       setPhoto(null)
       setPhotoPreview(null)
+      setAadharFile(null)
+      setPanFile(null)
     } catch (err) {
       console.error(err)
       alert('Failed to update user: ' + err.message)
@@ -277,18 +293,34 @@ export default function UserDetails() {
                   <p className="text-sm font-semibold text-kala-dark">{user.employeeId || '—'}</p>
                 )}
               </div>
-              <div>
-                <p className="text-xs text-gray-400 font-medium mb-1 uppercase tracking-wider">Aadhar Card</p>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Aadhar Card</p>
+                  {(user.aadharUrl || form.aadharUrl) && (
+                    <a href={user.aadharUrl || form.aadharUrl} target="_blank" rel="noreferrer" className="text-[10px] font-semibold text-kala-red hover:underline">View Document</a>
+                  )}
+                </div>
                 {isEditing ? (
-                  <input type="text" value={form.aadhar || ''} onChange={e => handleInputChange('aadhar', e.target.value.replace(/\D/g, '').slice(0, 12))} maxLength={12} className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2" />
+                  <>
+                    <input type="text" value={form.aadhar || ''} onChange={e => handleInputChange('aadhar', e.target.value.replace(/\D/g, '').slice(0, 12))} maxLength={12} className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-1" placeholder="Aadhar Number" />
+                    <input type="file" accept="image/*,.pdf" onChange={e => setAadharFile(e.target.files[0])} className="text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200" />
+                  </>
                 ) : (
                   <p className="text-sm font-semibold text-kala-dark">{user.aadhar || '—'}</p>
                 )}
               </div>
-              <div>
-                <p className="text-xs text-gray-400 font-medium mb-1 uppercase tracking-wider">PAN Card</p>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">PAN Card</p>
+                  {(user.panUrl || form.panUrl) && (
+                    <a href={user.panUrl || form.panUrl} target="_blank" rel="noreferrer" className="text-[10px] font-semibold text-kala-red hover:underline">View Document</a>
+                  )}
+                </div>
                 {isEditing ? (
-                  <input type="text" value={form.pan || ''} onChange={e => handleInputChange('pan', e.target.value.toUpperCase().slice(0, 10))} maxLength={10} className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 uppercase" />
+                  <>
+                    <input type="text" value={form.pan || ''} onChange={e => handleInputChange('pan', e.target.value.toUpperCase().slice(0, 10))} maxLength={10} className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-1 uppercase" placeholder="PAN Number" />
+                    <input type="file" accept="image/*,.pdf" onChange={e => setPanFile(e.target.files[0])} className="text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200" />
+                  </>
                 ) : (
                   <p className="text-sm font-semibold text-kala-dark">{user.pan || '—'}</p>
                 )}
@@ -440,7 +472,7 @@ export default function UserDetails() {
         {/* Action Bar */}
         {isEditing ? (
           <div className="bg-gray-50 border-t border-gray-200 p-4 sm:px-8 flex items-center justify-end gap-3">
-            <Button onClick={() => { setIsEditing(false); setForm(user); setPhoto(null); setPhotoPreview(null); }} variant="outline" disabled={saving}>
+            <Button onClick={() => { setIsEditing(false); setForm(user); setPhoto(null); setPhotoPreview(null); setAadharFile(null); setPanFile(null); }} variant="outline" disabled={saving}>
               <X size={16} className="mr-2" /> Cancel
             </Button>
             <Button onClick={handleSave} loading={saving} className="bg-kala-red text-white hover:bg-red-700">
