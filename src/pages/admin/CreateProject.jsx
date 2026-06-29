@@ -5,7 +5,7 @@ import { db, storage, uploadFile } from '../../api/firebase'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import imageCompression from 'browser-image-compression'
 import { Button } from '../../components/ui/Button'
-import { ArrowLeft, Building2, MapPin, IndianRupee, ImagePlus, X, FileText, Plus, Upload, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, Building2, MapPin, IndianRupee, ImagePlus, X, FileText, Plus, Upload, CheckCircle2, Trash2 } from 'lucide-react'
 
 // Simple modal for adding a client inline
 function AddClientModal({ isOpen, onClose, onSave }) {

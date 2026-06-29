@@ -47,11 +47,11 @@ export default function CreateUser() {
         const empSnap = await getDocs(empQuery)
         let nextNumber = 1
         if (!empSnap.empty) {
-           const lastId = empSnap.docs[0].data().employeeId
-           if (lastId && lastId.startsWith('KALA-')) {
-             const num = parseInt(lastId.replace('KALA-', ''), 10)
-             if (!isNaN(num)) nextNumber = num + 1
-           }
+          const lastId = empSnap.docs[0].data().employeeId
+          if (lastId && lastId.startsWith('KALA-')) {
+            const num = parseInt(lastId.replace('KALA-', ''), 10)
+            if (!isNaN(num)) nextNumber = num + 1
+          }
         }
         const nextId = `KALA-${String(nextNumber).padStart(4, '0')}`
         setForm(prev => ({ ...prev, employeeId: nextId }))
@@ -144,12 +144,12 @@ export default function CreateUser() {
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-        
+
         {/* Personal Info Section */}
         <div>
           <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 px-1">Personal Info</h2>
           <div className="bg-white rounded-3xl border border-gray-200 p-5 sm:p-6 shadow-sm flex flex-col gap-4">
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Full Name <span className="text-kala-red">*</span></label>
@@ -228,7 +228,7 @@ export default function CreateUser() {
         <div>
           <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 px-1">Documentation <span className="text-xs font-normal lowercase tracking-normal">(Optional)</span></h2>
           <div className="bg-white rounded-3xl border border-gray-200 p-5 sm:p-6 shadow-sm flex flex-col gap-6">
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {/* Aadhar */}
               <div>
@@ -273,7 +273,7 @@ export default function CreateUser() {
                     value={form.pan}
                     onChange={(e) => handleInputChange('pan', e.target.value.toUpperCase().slice(0, 10))}
                     maxLength={10}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all uppercase"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all"
                   />
                 </div>
                 <div className="relative">
@@ -298,7 +298,7 @@ export default function CreateUser() {
         <div>
           <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 px-1">Access & Role</h2>
           <div className="bg-white rounded-3xl border border-gray-200 p-5 sm:p-6 shadow-sm flex flex-col gap-6">
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">System Role <span className="text-kala-red">*</span></label>
@@ -347,7 +347,7 @@ export default function CreateUser() {
                   <Plus size={14} className="mr-1" /> Manage
                 </Button>
               </div>
-              
+
               <div>
                 {form.assignProjects?.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
@@ -360,7 +360,7 @@ export default function CreateUser() {
                 )}
               </div>
             </div>
-            
+
             <div className="pt-2">
               <label className="flex items-start gap-3 cursor-pointer group w-fit">
                 <div className={`mt-0.5 w-10 h-5 rounded-full flex items-center transition-colors px-0.5 ${form.activeAccount ? 'bg-green-500' : 'bg-gray-200'}`}>
@@ -378,7 +378,7 @@ export default function CreateUser() {
         </div>
 
         {/* Projects Modal */}
-        <AssignProjectsModal 
+        <AssignProjectsModal
           open={isProjectsModalOpen}
           onClose={() => setIsProjectsModalOpen(false)}
           projects={projects}
