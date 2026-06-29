@@ -11,6 +11,7 @@ import {
   Building, MapPin, UserSquare, ShieldCheck, CheckCircle2,
   CreditCard, FileText
 } from 'lucide-react'
+import { AssignProjectsModal } from '../../components/shared/AssignProjectsModal'
 
 // ROLE_PERMISSIONS removed as summary is no longer needed
 
@@ -18,6 +19,7 @@ export default function CreateUser() {
   const navigate = useNavigate()
   const [saving, setSaving] = useState(false)
   const [projects, setProjects] = useState([])
+  const [isProjectsModalOpen, setIsProjectsModalOpen] = useState(false)
 
   const [form, setForm] = useState({
     fullName: '',
@@ -231,50 +233,38 @@ export default function CreateUser() {
           </div>
           <hr className="border-gray-100" />
           <div className="px-4 py-3">
-            <div className="flex items-center gap-3 mb-3">
-              <MapPin size={18} className="text-gray-400 flex-shrink-0" />
-              <span className="text-sm text-kala-dark font-medium">Assign Projects</span>
-            </div>
-            <div className="pl-8">
-              {projects.length > 0 && (
-                <div className="mb-3">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input 
-                      type="checkbox"
-                      checked={form.assignProjects?.length === projects.length}
-                      onChange={(e) => {
-                         if (e.target.checked) {
-                            setForm(prev => ({ ...prev, assignProjects: projects.map(p => p.id) }));
-                         } else {
-                            setForm(prev => ({ ...prev, assignProjects: [] }));
-                         }
-                      }}
-                      className="rounded border-gray-300 text-kala-red focus:ring-kala-red"
-                    />
-                    <span className="text-sm font-semibold text-kala-dark">Select All Projects</span>
-                  </label>
-                </div>
-              )}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-48 overflow-y-auto pr-2">
-                {projects.length === 0 ? (
-                  <p className="text-xs text-gray-500">No projects found.</p>
-                ) : (
-                  projects.map(proj => (
-                    <label key={proj.id} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors">
-                      <input 
-                        type="checkbox"
-                        checked={(form.assignProjects || []).includes(proj.id)}
-                        onChange={() => handleProjectToggle(proj.id)}
-                        className="rounded border-gray-300 text-kala-red focus:ring-kala-red flex-shrink-0"
-                      />
-                      <span className="text-sm text-gray-600 truncate" title={proj.name || proj.id}>{proj.name || proj.id}</span>
-                    </label>
-                  ))
-                )}
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <MapPin size={18} className="text-gray-400 flex-shrink-0" />
+                <span className="text-sm text-kala-dark font-medium">Assign Projects</span>
               </div>
+              <Button type="button" size="sm" variant="outline" onClick={() => setIsProjectsModalOpen(true)}>
+                Manage Projects
+              </Button>
+            </div>
+            
+            <div className="pl-8">
+              {form.assignProjects?.length > 0 ? (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <span className="text-sm font-semibold text-kala-red bg-red-50 px-2 py-1 rounded-md">
+                    {form.assignProjects.length} Project{form.assignProjects.length > 1 ? 's' : ''} Assigned
+                  </span>
+                </div>
+              ) : (
+                <p className="text-xs text-gray-500 mt-2">No projects assigned.</p>
+              )}
             </div>
           </div>
         </div>
+
+        {/* Projects Modal */}
+        <AssignProjectsModal 
+          open={isProjectsModalOpen}
+          onClose={() => setIsProjectsModalOpen(false)}
+          projects={projects}
+          initialAssignedIds={form.assignProjects || []}
+          onSave={(ids) => handleInputChange('assignProjects', ids)}
+        />
 
         {/* Toggles */}
         <div className="flex flex-col gap-4 px-1">
