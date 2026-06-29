@@ -36,8 +36,6 @@ export default function UserDetails() {
   const [isEditing, setIsEditing] = useState(false)
   const [form, setForm] = useState({})
   
-  const [photo, setPhoto] = useState(null)
-  const [photoPreview, setPhotoPreview] = useState(null)
   const [aadharFile, setAadharFile] = useState(null)
   const [panFile, setPanFile] = useState(null)
   const [projects, setProjects] = useState([])
@@ -73,14 +71,6 @@ export default function UserDetails() {
     fetchData()
   }, [id])
 
-  const handlePhotoChange = (e) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setPhoto(file)
-      setPhotoPreview(URL.createObjectURL(file))
-    }
-  }
-
   const handleInputChange = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }))
   }
@@ -95,11 +85,6 @@ export default function UserDetails() {
 
     setSaving(true)
     try {
-      let photoUrl = form.photoUrl !== undefined ? form.photoUrl : null
-      if (photo) {
-        photoUrl = await uploadFile(`profiles/${id}-${Date.now()}`, photo)
-      }
-
       let aadharUrl = form.aadharUrl !== undefined ? form.aadharUrl : null
       if (aadharFile) {
         aadharUrl = await uploadFile(`documents/${id}-aadhar-${Date.now()}`, aadharFile)
@@ -112,7 +97,6 @@ export default function UserDetails() {
 
       const updatedData = {
         ...form,
-        photoUrl,
         aadharUrl,
         panUrl,
         updatedAt: serverTimestamp()
@@ -129,8 +113,6 @@ export default function UserDetails() {
       
       setUser(updatedData)
       setIsEditing(false)
-      setPhoto(null)
-      setPhotoPreview(null)
       setAadharFile(null)
       setPanFile(null)
     } catch (err) {
@@ -202,25 +184,11 @@ export default function UserDetails() {
         <div className="p-6 sm:p-8 flex flex-col sm:flex-row gap-6 items-start sm:items-center">
           
           <div className="relative group flex-shrink-0">
-            {isEditing && (
-              <input 
-                type="file" 
-                accept="image/*" 
-                onChange={handlePhotoChange} 
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
-              />
-            )}
-            {photoPreview || form.photoUrl || user.photoUrl ? (
-              <img src={photoPreview || form.photoUrl || user.photoUrl} alt={form.fullName} className="w-24 h-24 rounded-full object-cover border-4 border-gray-50 shadow-sm" />
+            {form.photoUrl || user.photoUrl ? (
+              <img src={form.photoUrl || user.photoUrl} alt={form.fullName} className="w-24 h-24 rounded-full object-cover border-4 border-gray-50 shadow-sm" />
             ) : (
               <div className="w-24 h-24 rounded-full bg-kala-red flex items-center justify-center border-4 border-red-50">
                 <span className="text-white text-3xl font-bold">{form.fullName?.[0]?.toUpperCase() || 'U'}</span>
-              </div>
-            )}
-            {isEditing && (
-              <div className="absolute inset-0 rounded-full bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                <Edit2 size={20} className="text-white mb-1" />
-                <span className="text-[10px] font-bold text-white uppercase tracking-wider">Change</span>
               </div>
             )}
           </div>
@@ -472,7 +440,7 @@ export default function UserDetails() {
         {/* Action Bar */}
         {isEditing ? (
           <div className="bg-gray-50 border-t border-gray-200 p-4 sm:px-8 flex items-center justify-end gap-3">
-            <Button onClick={() => { setIsEditing(false); setForm(user); setPhoto(null); setPhotoPreview(null); setAadharFile(null); setPanFile(null); }} variant="outline" disabled={saving}>
+            <Button onClick={() => { setIsEditing(false); setForm(user); setAadharFile(null); setPanFile(null); }} variant="outline" disabled={saving}>
               <X size={16} className="mr-2" /> Cancel
             </Button>
             <Button onClick={handleSave} loading={saving} className="bg-kala-red text-white hover:bg-red-700">
