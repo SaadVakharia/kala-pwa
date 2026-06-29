@@ -9,21 +9,11 @@ import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/shared/Badge'
 import { 
   ArrowLeft, User, Phone, Mail, BadgeCheck, Briefcase, 
-  Building, MapPin, UserSquare, ShieldCheck, CheckCircle2,
   Trash2, Edit2, Save, X, FileText, CreditCard
 } from 'lucide-react'
 import { AssignProjectsModal } from '../../components/shared/AssignProjectsModal'
 
-const ROLE_PERMISSIONS = {
-  admin: ['Full System Access', 'User Management', 'Audit Logs', 'System Settings', 'Manage All Projects'],
-  general_manager: ['View Projects', 'User Management', 'Create Reports', 'Audit Logs', 'Manage Issues', 'System Settings', 'Material Entry', '+ 8 more permissions'],
-  hr_manager: ['User Management', 'Audit Logs', 'System Settings'],
-  project_manager: ['View Projects', 'Create Reports', 'Material Entry', 'Manage Issues'],
-  senior_technician: ['View Projects', 'Manage Issues', 'Update Status', 'Material Entry'],
-  site_supervisor: ['View Projects', 'Manage Issues', 'Material Entry', 'Create Reports'],
-  client: ['View Projects', 'View Reports', 'Track Progress'],
-  default: ['View Projects', 'View Assignments']
-}
+
 
 export default function UserDetails() {
   const { id } = useParams()
@@ -150,8 +140,6 @@ export default function UserDetails() {
     )
   }
 
-  const permissions = ROLE_PERMISSIONS[isEditing ? form.role : user.role] || ROLE_PERMISSIONS.default
-  
   // Format Date
   const regDate = user.createdAt?.toDate ? user.createdAt.toDate().toLocaleDateString('en-GB', { 
     day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' 
@@ -340,90 +328,86 @@ export default function UserDetails() {
               Access & Security
             </h3>
             
-            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <p className="text-xs text-gray-400 font-medium mb-0.5 uppercase tracking-wider">System Role</p>
+            <div className="bg-gray-50 rounded-xl border border-gray-100 overflow-hidden shadow-sm">
+              <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100">
+                <div className="flex-1">
+                  <p className="text-xs text-gray-400 font-medium mb-1 uppercase tracking-wider">System Role</p>
                   {isEditing ? (
-                    <select value={form.role || ''} onChange={e => handleInputChange('role', e.target.value)} className="text-sm font-bold text-kala-dark bg-white border border-gray-200 rounded-lg px-2 py-1 mt-1">
+                    <select value={form.role || ''} onChange={e => handleInputChange('role', e.target.value)} className="w-full sm:w-auto text-sm font-bold text-kala-dark bg-white border border-gray-200 rounded-lg px-3 py-2 focus:ring-1 focus:ring-kala-red focus:outline-none">
                       {Object.values(ROLES).map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
                     </select>
                   ) : (
                     <p className="text-sm font-bold text-kala-dark">{ROLE_LABELS[user.role]}</p>
                   )}
                 </div>
-                {isEditing && (
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" checked={form.active !== false} onChange={e => handleInputChange('active', e.target.checked)} className="rounded text-kala-red focus:ring-kala-red" />
-                    <span className="text-xs font-semibold text-kala-dark">Active</span>
-                  </label>
-                )}
-              </div>
-              
-              <div className="h-px bg-gray-200 w-full mb-4" />
-              
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Permissions Preview</p>
-              <div className="grid grid-cols-2 gap-y-2 gap-x-2">
-                {permissions.map((perm, idx) => (
-                  <div key={idx} className="flex items-center gap-1.5">
-                    <CheckCircle2 size={12} className="text-green-500 flex-shrink-0" />
-                    <span className="text-[11px] font-medium text-gray-600 truncate">{perm}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <p className="text-xs text-gray-400 font-medium mb-1 uppercase tracking-wider">Registration Date</p>
-              <p className="text-sm font-medium text-kala-dark flex items-center gap-2">
-                {regDate}
-              </p>
-            </div>
-            
-            {/* Assign Projects Section */}
-            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="text-xs text-gray-400 font-medium uppercase tracking-wider flex items-center gap-2">
-                  <MapPin size={14} className="text-kala-red" /> Assigned Projects
-                </h4>
-                {isEditing && (
-                  <Button type="button" size="sm" variant="outline" onClick={() => setIsProjectsModalOpen(true)}>
-                    Manage Projects
-                  </Button>
-                )}
-              </div>
-              
-              {isEditing ? (
-                <div>
-                  {form.assignProjects?.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      <span className="text-sm font-semibold text-kala-red bg-red-50 px-2 py-1 rounded-md">
-                        {form.assignProjects.length} Project{form.assignProjects.length > 1 ? 's' : ''} Assigned
-                      </span>
+                {isEditing ? (
+                  <label className="flex items-center gap-3 cursor-pointer group shrink-0">
+                    <span className="text-sm font-semibold text-kala-dark group-hover:text-kala-red transition-colors">Active Account</span>
+                    <div className={`relative w-10 h-5 rounded-full flex items-center transition-colors px-0.5 ${form.active !== false ? 'bg-green-500' : 'bg-gray-300'}`}>
+                      <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${form.active !== false ? 'translate-x-5' : 'translate-x-0'}`} />
                     </div>
-                  ) : (
-                    <p className="text-xs text-gray-500">No projects assigned.</p>
+                    <input type="checkbox" checked={form.active !== false} onChange={e => handleInputChange('active', e.target.checked)} className="hidden" />
+                  </label>
+                ) : (
+                  <div className="flex flex-col items-end shrink-0">
+                    <p className="text-xs text-gray-400 font-medium mb-1 uppercase tracking-wider">Status</p>
+                    <Badge status={user.active !== false ? 'active' : 'inactive'} />
+                  </div>
+                )}
+              </div>
+
+              {/* Registration Date */}
+              <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 bg-white">
+                <div>
+                  <p className="text-xs text-gray-400 font-medium mb-1 uppercase tracking-wider">Registration Date</p>
+                  <p className="text-sm font-medium text-kala-dark">{regDate}</p>
+                </div>
+              </div>
+
+              {/* Assign Projects Section */}
+              <div className="p-4 sm:p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-xs text-gray-400 font-medium uppercase tracking-wider flex items-center gap-2">
+                    <MapPin size={14} className="text-kala-red" /> Assigned Projects
+                  </h4>
+                  {isEditing && (
+                    <Button type="button" size="sm" variant="outline" onClick={() => setIsProjectsModalOpen(true)}>
+                      Manage Projects
+                    </Button>
                   )}
                 </div>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {(!user.assignProjects || user.assignProjects.length === 0) ? (
-                    <span className="text-xs text-gray-500">No projects assigned</span>
-                  ) : (
-                    user.assignProjects.map(projId => {
-                      const proj = projects.find(p => p.id === projId)
-                      return (
-                        <div key={projId} className="bg-white border border-gray-200 px-2 py-1 rounded-md text-xs font-medium text-gray-700 shadow-sm flex items-center gap-1.5">
-                          <div className="w-1.5 h-1.5 rounded-full bg-kala-red"></div>
-                          {proj ? proj.name || proj.id : projId}
-                        </div>
-                      )
-                    })
-                  )}
-                </div>
-              )}
+                
+                {isEditing ? (
+                  <div>
+                    {form.assignProjects?.length > 0 ? (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        <span className="text-sm font-semibold text-kala-red bg-red-50 px-2 py-1 rounded-md">
+                          {form.assignProjects.length} Project{form.assignProjects.length > 1 ? 's' : ''} Assigned
+                        </span>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-500 mt-2">No projects assigned.</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {(!user.assignProjects || user.assignProjects.length === 0) ? (
+                      <span className="text-xs text-gray-500">No projects assigned</span>
+                    ) : (
+                      user.assignProjects.map(projId => {
+                        const proj = projects.find(p => p.id === projId)
+                        return (
+                          <div key={projId} className="bg-white border border-gray-200 px-2 py-1 rounded-md text-xs font-medium text-gray-700 shadow-sm flex items-center gap-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-kala-red"></div>
+                            {proj ? proj.name || proj.id : projId}
+                          </div>
+                        )
+                      })
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-            
           </div>
           
         </div>
