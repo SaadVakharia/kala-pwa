@@ -1,18 +1,12 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useProjects } from '../../hooks/useProjects'
 import { PageHeader } from '../../components/shared/PageHeader'
 import { ProjectCard } from '../../components/shared/ProjectCard'
 import { EmptyState } from '../../components/shared/EmptyState'
-import { Modal } from '../../components/shared/Modal'
 import { useAuthStore, ROLES } from '../../store/authStore'
 import { Input } from '../../components/ui/Input'
-import { Button } from '../../components/ui/Button'
-import { addDocument } from '../../api/firestore'
-import { storage } from '../../api/firebase'
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
-import imageCompression from 'browser-image-compression'
-import { MapPin, Plus, Search, ImagePlus, X, Building2, Calendar, User, CheckCircle2 } from 'lucide-react'
+import { Plus, Search } from 'lucide-react'
 
 const STATUS_OPTS = ['active', 'on_hold', 'completed']
 
@@ -25,16 +19,6 @@ export default function AdminProjects() {
   const { projects, loading } = useProjects()
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
-  const [modalOpen, setModalOpen] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [imageFile, setImageFile] = useState(null)
-  const [imagePreview, setImagePreview] = useState(null)
-  const [uploadProgress, setUploadProgress] = useState(false)
-  const fileInputRef = useRef()
-
-  const [form, setForm] = useState({
-    name: '', location: '', client: '', status: 'active', startDate: '', endDate: ''
-  })
 
   const filtered = projects.filter(p => {
     const matchSearch = p.name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -43,60 +27,6 @@ export default function AdminProjects() {
     return matchSearch && matchStatus
   })
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0]
-    if (!file) return
-    setImageFile(file)
-    const reader = new FileReader()
-    reader.onload = (ev) => setImagePreview(ev.target.result)
-    reader.readAsDataURL(file)
-  }
-
-  const clearImage = () => {
-    setImageFile(null)
-    setImagePreview(null)
-    if (fileInputRef.current) fileInputRef.current.value = ''
-  }
-
-  const handleSave = async (e) => {
-    e.preventDefault()
-    setSaving(true)
-    try {
-      let imageUrl = null
-
-      if (imageFile) {
-        setUploadProgress(true)
-        
-        const options = {
-          maxSizeMB: 0.2, // ~200KB max
-          maxWidthOrHeight: 800,
-          useWebWorker: true
-        }
-        const compressedFile = await imageCompression(imageFile, options)
-
-        const storageRef = ref(storage, `projects/${Date.now()}_${compressedFile.name}`)
-        await uploadBytes(storageRef, compressedFile)
-        imageUrl = await getDownloadURL(storageRef)
-        setUploadProgress(false)
-      }
-
-      await addDocument('projects', { ...form, ...(imageUrl ? { imageUrl } : {}) })
-      setModalOpen(false)
-      setForm({ name: '', location: '', client: '', status: 'active', startDate: '', endDate: '' })
-      clearImage()
-    } catch (err) {
-      console.error('Save failed:', err)
-    } finally {
-      setSaving(false)
-      setUploadProgress(false)
-    }
-  }
-
-  const closeModal = () => {
-    setModalOpen(false)
-    clearImage()
-  }
-
   return (
     <div>
       <PageHeader
@@ -104,7 +34,7 @@ export default function AdminProjects() {
         subtitle={`${projects.length} total`}
         action={isAdmin && (
           <button
-            onClick={() => setModalOpen(true)}
+            onClick={() => navigate('/admin/projects/new')}
             className="flex items-center gap-1.5 bg-kala-red text-white text-sm font-medium px-4 py-2 rounded-xl hover:bg-kala-red-dark transition-all"
           >
             <Plus size={16} /> Add Project
@@ -141,14 +71,9 @@ export default function AdminProjects() {
         </div>
       ) : filtered.length === 0 ? (
         <EmptyState
-          icon={MapPin}
+          icon="building"
           title="No projects found"
-          subtitle={search ? 'Try a different search term' : (isAdmin ? 'Add your first project to get started' : 'No projects available')}
-          action={!search && isAdmin && (
-            <button onClick={() => setModalOpen(true)} className="text-sm bg-kala-red text-white px-4 py-2 rounded-xl">
-              Add Project
-            </button>
-          )}
+          message={search ? "Try adjusting your search or filters." : "Get started by adding a new project."}
         />
       ) : (
         <div className="flex flex-col gap-3 sm:gap-4">
@@ -156,111 +81,11 @@ export default function AdminProjects() {
             <ProjectCard
               key={p.id}
               project={p}
-              onClick={() => {
-                const basePath = location.pathname.endsWith('/') ? location.pathname.slice(0, -1) : location.pathname;
-                navigate(`${basePath}/${p.id}`)
-              }}
+              onClick={() => navigate(`${location.pathname}/${p.id}`)}
             />
           ))}
         </div>
       )}
-
-      {/* Add Project Modal */}
-      <Modal open={modalOpen} onClose={closeModal} title="Add Project">
-        <form onSubmit={handleSave} className="flex flex-col gap-4">
-
-          {/* Image Upload */}
-          <div className="flex flex-col gap-1.5">
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-0.5">
-              Project Photo <span className="text-gray-400 font-normal lowercase tracking-normal">(optional)</span>
-            </label>
-            {imagePreview ? (
-              <div className="relative rounded-xl overflow-hidden h-36 bg-gray-100">
-                <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                <button
-                  type="button"
-                  onClick={clearImage}
-                  className="absolute top-2 right-2 w-7 h-7 bg-black/50 rounded-full flex items-center justify-center text-white hover:bg-black/70"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="h-24 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 hover:bg-gray-100 hover:border-kala-red/40 transition-all flex flex-col items-center justify-center gap-1.5"
-              >
-                <ImagePlus size={22} className="text-gray-400" />
-                <span className="text-xs text-gray-400 font-medium">Tap to add photo</span>
-              </button>
-            )}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleImageChange}
-            />
-          </div>
-
-          {[
-            { label: 'Project Name *', key: 'name', placeholder: 'e.g. Green Heights Tower', required: true, icon: Building2 },
-            { label: 'Location', key: 'location', placeholder: 'e.g. Mumbai, Maharashtra', icon: MapPin },
-            { label: 'Client Name', key: 'client', placeholder: 'e.g. Rahul Developers', icon: User },
-          ].map(f => (
-            <Input
-              key={f.key}
-              label={f.label}
-              placeholder={f.placeholder}
-              value={form[f.key]}
-              leftIcon={f.icon}
-              onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
-              required={f.required}
-            />
-          ))}
-
-          <div className="flex flex-col gap-1.5">
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-0.5">Status</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                <CheckCircle2 size={18} className="text-gray-400" />
-              </div>
-              <select
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium text-kala-dark focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all cursor-pointer appearance-none"
-                value={form.status}
-                onChange={e => setForm(p => ({ ...p, status: e.target.value }))}
-              >
-                {STATUS_OPTS.map(s => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            {[{ label: 'Start Date', key: 'startDate' }, { label: 'End Date', key: 'endDate' }].map(f => (
-              <Input
-                key={f.key}
-                label={f.label}
-                type="date"
-                leftIcon={Calendar}
-                value={form[f.key]}
-                onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
-              />
-            ))}
-          </div>
-
-          <Button
-            type="submit"
-            disabled={saving}
-            loading={saving || uploadProgress}
-            loadingLabel={uploadProgress ? 'Uploading photo...' : 'Saving...'}
-            fullWidth
-            className="mt-1"
-          >
-            Add Project
-          </Button>
-        </form>
-      </Modal>
     </div>
   )
 }

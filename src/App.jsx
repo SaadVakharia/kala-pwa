@@ -9,6 +9,7 @@ import ProjectDetails from './pages/shared/ProjectDetails'
 // Admin
 import AdminDashboard from './pages/admin/Dashboard'
 import AdminProjects from './pages/admin/Projects'
+import CreateProject from './pages/admin/CreateProject'
 import AdminUsers from './pages/admin/Users'
 import CreateUser from './pages/admin/CreateUser'
 import UserDetails from './pages/admin/UserDetails'
@@ -52,6 +53,7 @@ export default function App() {
         {/* Admin */}
         <Route path="/admin" element={<Guard roles={ADMIN_ROLES}><AdminDashboard /></Guard>} />
         <Route path="/admin/projects" element={<Guard roles={ADMIN_ROLES}><AdminProjects /></Guard>} />
+        <Route path="/admin/projects/new" element={<Guard roles={ADMIN_ROLES}><CreateProject /></Guard>} />
         <Route path="/admin/projects/:id" element={<Guard roles={ADMIN_ROLES}><ProjectDetails /></Guard>} />
         <Route path="/admin/users" element={<Guard roles={ADMIN_ROLES}><AdminUsers /></Guard>} />
         <Route path="/admin/users/create" element={<Guard roles={ADMIN_ROLES}><CreateUser /></Guard>} />
