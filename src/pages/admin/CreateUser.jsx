@@ -387,7 +387,7 @@ export default function CreateUser() {
         />
 
         {/* Actions */}
-        <div className="flex flex-col sm:flex-row gap-3 mt-4 sm:justify-end">
+        <div className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 flex flex-col sm:flex-row gap-3 z-50 bg-white/90 p-2.5 sm:p-3 rounded-2xl shadow-2xl backdrop-blur-xl border border-gray-200">
           <Button type="button" variant="outline" className="py-3.5 sm:py-2.5 sm:w-32 text-base sm:text-sm border-gray-200 order-2 sm:order-1" onClick={() => navigate(-1)}>
             Cancel
           </Button>
