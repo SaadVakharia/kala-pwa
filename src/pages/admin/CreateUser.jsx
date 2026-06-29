@@ -4,7 +4,7 @@ import { PageHeader } from '../../components/shared/PageHeader'
 import { Input } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
 import { setDoc, doc, serverTimestamp, collection, query, orderBy, limit, getDocs } from 'firebase/firestore'
-import { db } from '../../api/firebase'
+import { db, uploadFile } from '../../api/firebase'
 import { useAuthStore, ROLE_LABELS, ROLES } from '../../store/authStore'
 import {
   ArrowLeft, User, Phone, Mail, BadgeCheck, Briefcase,
@@ -20,6 +20,8 @@ export default function CreateUser() {
   const [saving, setSaving] = useState(false)
   const [projects, setProjects] = useState([])
   const [isProjectsModalOpen, setIsProjectsModalOpen] = useState(false)
+  const [aadharFile, setAadharFile] = useState(null)
+  const [panFile, setPanFile] = useState(null)
 
   const [form, setForm] = useState({
     fullName: '',
@@ -93,13 +95,25 @@ export default function CreateUser() {
         ? form.phone
         : `+91${form.phone.replace(/\D/g, '').slice(0, 10)}`
 
+      let aadharUrl = null;
+      let panUrl = null;
+
+      if (aadharFile) {
+        aadharUrl = await uploadFile(`documents/${phoneFormatted}-aadhar-${Date.now()}`, aadharFile);
+      }
+      if (panFile) {
+        panUrl = await uploadFile(`documents/${phoneFormatted}-pan-${Date.now()}`, panFile);
+      }
+
       await setDoc(doc(db, 'profiles', phoneFormatted), {
         fullName: form.fullName,
         phone: phoneFormatted,
         email: form.email || null,
         employeeId: form.employeeId,
         aadhar: form.aadhar || null,
+        aadharUrl: aadharUrl || null,
         pan: form.pan || null,
+        panUrl: panUrl || null,
         role: form.role,
         department: form.department || null,
         assignProjects: form.assignProjects || [],
@@ -179,28 +193,48 @@ export default function CreateUser() {
             />
           </div>
           <hr className="border-gray-100" />
-          <div className="flex items-center px-4 py-1">
-            <FileText size={18} className="text-gray-400 w-8 flex-shrink-0" />
-            <input
-              type="text"
-              placeholder="Enter Aadhar Card Number (Optional)"
-              value={form.aadhar}
-              onChange={(e) => handleInputChange('aadhar', e.target.value.replace(/\D/g, '').slice(0, 12))}
-              maxLength={12}
-              className="flex-1 py-3 text-sm focus:outline-none placeholder:text-gray-400"
-            />
+          <div className="px-4 py-2 flex flex-col gap-2">
+            <div className="flex items-center">
+              <FileText size={18} className="text-gray-400 w-8 flex-shrink-0" />
+              <input
+                type="text"
+                placeholder="Enter Aadhar Card Number (Optional)"
+                value={form.aadhar}
+                onChange={(e) => handleInputChange('aadhar', e.target.value.replace(/\D/g, '').slice(0, 12))}
+                maxLength={12}
+                className="flex-1 py-1 text-sm focus:outline-none placeholder:text-gray-400"
+              />
+            </div>
+            <div className="flex items-center pl-8">
+              <input
+                type="file"
+                accept="image/*,.pdf"
+                onChange={(e) => setAadharFile(e.target.files[0])}
+                className="text-xs text-gray-500 w-full file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200"
+              />
+            </div>
           </div>
           <hr className="border-gray-100" />
-          <div className="flex items-center px-4 py-1">
-            <CreditCard size={18} className="text-gray-400 w-8 flex-shrink-0" />
-            <input
-              type="text"
-              placeholder="Enter PAN Card Number (Optional)"
-              value={form.pan}
-              onChange={(e) => handleInputChange('pan', e.target.value.toUpperCase().slice(0, 10))}
-              maxLength={10}
-              className="flex-1 py-3 text-sm focus:outline-none placeholder:text-gray-400 uppercase"
-            />
+          <div className="px-4 py-2 flex flex-col gap-2">
+            <div className="flex items-center">
+              <CreditCard size={18} className="text-gray-400 w-8 flex-shrink-0" />
+              <input
+                type="text"
+                placeholder="Enter PAN Card Number (Optional)"
+                value={form.pan}
+                onChange={(e) => handleInputChange('pan', e.target.value.toUpperCase().slice(0, 10))}
+                maxLength={10}
+                className="flex-1 py-1 text-sm focus:outline-none placeholder:text-gray-400 uppercase"
+              />
+            </div>
+            <div className="flex items-center pl-8">
+              <input
+                type="file"
+                accept="image/*,.pdf"
+                onChange={(e) => setPanFile(e.target.files[0])}
+                className="text-xs text-gray-500 w-full file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200"
+              />
+            </div>
           </div>
         </div>
 

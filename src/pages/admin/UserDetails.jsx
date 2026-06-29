@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { doc, getDoc, setDoc, deleteDoc, serverTimestamp, collection, getDocs } from 'firebase/firestore'
+import { doc, getDoc, setDoc, deleteDoc, serverTimestamp, collection, getDocs, query, where } from 'firebase/firestore'
 import { db, uploadFile } from '../../api/firebase'
 import { useAuthStore, ROLE_LABELS, ROLES } from '../../store/authStore'
 import { PageHeader } from '../../components/shared/PageHeader'
@@ -39,6 +39,7 @@ export default function UserDetails() {
   const [photo, setPhoto] = useState(null)
   const [photoPreview, setPhotoPreview] = useState(null)
   const [projects, setProjects] = useState([])
+  const [projectManagers, setProjectManagers] = useState([])
   const [isProjectsModalOpen, setIsProjectsModalOpen] = useState(false)
 
   useEffect(() => {
@@ -56,6 +57,11 @@ export default function UserDetails() {
         const projSnap = await getDocs(collection(db, 'projects'))
         const projs = projSnap.docs.map(d => ({ id: d.id, ...d.data() }))
         setProjects(projs)
+
+        const pmQuery = query(collection(db, 'profiles'), where('role', '==', 'project_manager'))
+        const pmSnap = await getDocs(pmQuery)
+        const pms = pmSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+        setProjectManagers(pms)
       } catch (err) {
         console.error(err)
       } finally {
@@ -314,7 +320,12 @@ export default function UserDetails() {
               <div>
                 <p className="text-xs text-gray-400 font-medium mb-1 uppercase tracking-wider">Reporting To</p>
                 {isEditing ? (
-                  <input type="text" value={form.reportingTo || ''} onChange={e => handleInputChange('reportingTo', e.target.value)} className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2" />
+                  <select value={form.reportingTo || ''} onChange={e => handleInputChange('reportingTo', e.target.value)} className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                    <option value="">None</option>
+                    {projectManagers.map(pm => (
+                      <option key={pm.id} value={pm.fullName}>{pm.fullName}</option>
+                    ))}
+                  </select>
                 ) : (
                   <p className="text-sm font-semibold text-kala-dark">{user.reportingTo || '—'}</p>
                 )}
