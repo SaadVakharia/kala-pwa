@@ -1,14 +1,22 @@
 import { MapPin, ArrowRight, Building2 } from 'lucide-react'
 import { Badge } from './Badge'
 
-export function ProjectCard({ project, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className="bg-white rounded-2xl shadow-card border border-kala-border hover:shadow-md transition-all text-left w-full overflow-hidden flex items-center gap-0 active:scale-[0.99]"
-    >
+export function ProjectCard({ project, onClick, selectable, selected, onToggle }) {
+  const isSelected = selectable ? selected : false;
+
+  const handleClick = (e) => {
+    if (selectable && onToggle) {
+      e.preventDefault();
+      onToggle(project.id);
+    } else if (onClick) {
+      onClick(e);
+    }
+  }
+
+  const content = (
+    <>
       {/* Thumbnail */}
-      <div className="w-20 h-20 flex-shrink-0 bg-gray-100 relative overflow-hidden">
+      <div className="w-16 h-16 flex-shrink-0 bg-gray-100 relative rounded-xl overflow-hidden shadow-sm">
         {project.imageUrl ? (
           <img
             src={project.imageUrl}
@@ -17,14 +25,14 @@ export function ProjectCard({ project, onClick }) {
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-kala-red/10 to-kala-red/5 flex items-center justify-center">
-            <Building2 size={28} className="text-kala-red/40" />
+            <Building2 size={24} className="text-kala-red/40" />
           </div>
         )}
       </div>
 
       {/* Info */}
-      <div className="flex-1 min-w-0 px-4 py-3">
-        <p className="text-sm font-semibold text-kala-dark truncate">{project.name}</p>
+      <div className="flex-1 min-w-0 py-1 text-left">
+        <p className="text-sm font-semibold text-kala-dark truncate">{project.name || project.id}</p>
         {project.location && (
           <div className="flex items-center gap-1 mt-0.5">
             <MapPin size={11} className="text-gray-400 flex-shrink-0" />
@@ -39,9 +47,36 @@ export function ProjectCard({ project, onClick }) {
         </div>
       </div>
 
-      <div className="pr-3 flex-shrink-0">
-        <ArrowRight size={16} className="text-gray-300" />
-      </div>
+      {selectable ? (
+        <div className="pr-3 flex-shrink-0">
+          <input 
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => onToggle && onToggle(project.id)}
+            className="w-5 h-5 rounded border-gray-300 text-kala-red focus:ring-kala-red"
+          />
+        </div>
+      ) : (
+        <div className="pr-1 flex-shrink-0">
+          <ArrowRight size={16} className="text-gray-300" />
+        </div>
+      )}
+    </>
+  )
+
+  const className = `bg-white rounded-2xl shadow-sm border ${isSelected ? 'border-kala-red ring-1 ring-kala-red' : 'border-kala-border hover:shadow-md'} transition-all w-full flex items-center p-3 gap-4 cursor-pointer ${!selectable ? 'active:scale-[0.99]' : ''}`
+
+  if (selectable) {
+    return (
+      <label className={className}>
+        {content}
+      </label>
+    )
+  }
+
+  return (
+    <button onClick={handleClick} className={className}>
+      {content}
     </button>
   )
 }

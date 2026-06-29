@@ -1,23 +1,35 @@
 import { useState, useEffect } from 'react'
 import { Modal } from './Modal'
-import { Search, Building2, MapPin } from 'lucide-react'
+import { Search } from 'lucide-react'
 import { Button } from '../ui/Button'
-import { Badge } from './Badge'
+import { ProjectCard } from './ProjectCard'
 
 export function AssignProjectsModal({ open, onClose, projects, initialAssignedIds, onSave }) {
   const [selectedIds, setSelectedIds] = useState([])
   const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('All')
 
   useEffect(() => {
     if (open) {
       setSelectedIds(initialAssignedIds || [])
       setSearch('')
+      setStatusFilter('All')
     }
   }, [open, initialAssignedIds])
 
-  const filteredProjects = projects.filter(p => 
-    (p.name || p.id).toLowerCase().includes(search.toLowerCase())
-  )
+  const filteredProjects = projects.filter(p => {
+    const matchesSearch = (p.name || p.id).toLowerCase().includes(search.toLowerCase())
+    
+    let matchesStatus = true
+    if (statusFilter !== 'All') {
+      const pStatus = (p.status || 'active').toLowerCase()
+      if (statusFilter === 'Active') matchesStatus = pStatus === 'active'
+      else if (statusFilter === 'On Hold') matchesStatus = ['on_hold', 'on hold', 'on-hold', 'onhold'].includes(pStatus)
+      else if (statusFilter === 'Completed') matchesStatus = pStatus === 'completed'
+    }
+
+    return matchesSearch && matchesStatus
+  })
 
   const handleToggle = (id) => {
     if (selectedIds.includes(id)) {
@@ -48,16 +60,28 @@ export function AssignProjectsModal({ open, onClose, projects, initialAssignedId
   return (
     <Modal open={open} onClose={onClose} title="Assign Projects">
       <div className="flex flex-col h-[60vh] md:h-auto md:max-h-[70vh]">
-        {/* Search */}
-        <div className="relative mb-4 shrink-0">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input 
-            type="text" 
-            placeholder="Search projects..." 
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-kala-red text-sm"
-          />
+        {/* Search & Filter */}
+        <div className="flex gap-2 mb-4 shrink-0">
+          <div className="relative flex-1">
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input 
+              type="text" 
+              placeholder="Search projects..." 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-kala-red text-sm"
+            />
+          </div>
+          <select 
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-kala-red bg-white cursor-pointer"
+          >
+            <option value="All">All</option>
+            <option value="Active">Active</option>
+            <option value="On Hold">On Hold</option>
+            <option value="Completed">Completed</option>
+          </select>
         </div>
 
         {/* Select All */}
@@ -81,57 +105,15 @@ export function AssignProjectsModal({ open, onClose, projects, initialAssignedId
             <p className="text-sm text-gray-500 text-center py-4">No projects found.</p>
           ) : (
             <div className="flex flex-col gap-3">
-              {filteredProjects.map(proj => {
-                const isSelected = selectedIds.includes(proj.id);
-                return (
-                  <label 
-                    key={proj.id} 
-                    className={`bg-white rounded-2xl shadow-sm border ${isSelected ? 'border-kala-red ring-1 ring-kala-red' : 'border-kala-border hover:shadow-md'} transition-all text-left w-full overflow-hidden flex items-center gap-0 cursor-pointer`}
-                  >
-                    {/* Thumbnail */}
-                    <div className="w-20 h-20 flex-shrink-0 bg-gray-100 relative overflow-hidden">
-                      {proj.imageUrl ? (
-                        <img
-                          src={proj.imageUrl}
-                          alt={proj.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-kala-red/10 to-kala-red/5 flex items-center justify-center">
-                          <Building2 size={28} className="text-kala-red/40" />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Info */}
-                    <div className="flex-1 min-w-0 px-4 py-3">
-                      <p className="text-sm font-semibold text-kala-dark truncate">{proj.name || proj.id}</p>
-                      {proj.location && (
-                        <div className="flex items-center gap-1 mt-0.5">
-                          <MapPin size={11} className="text-gray-400 flex-shrink-0" />
-                          <p className="text-xs text-gray-500 truncate">{proj.location}</p>
-                        </div>
-                      )}
-                      {proj.client && (
-                        <p className="text-xs text-gray-400 truncate mt-0.5">{proj.client}</p>
-                      )}
-                      <div className="mt-1.5">
-                        <Badge status={proj.status || 'active'} />
-                      </div>
-                    </div>
-
-                    {/* Checkbox */}
-                    <div className="pr-5 flex-shrink-0">
-                      <input 
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => handleToggle(proj.id)}
-                        className="w-5 h-5 rounded border-gray-300 text-kala-red focus:ring-kala-red"
-                      />
-                    </div>
-                  </label>
-                )
-              })}
+              {filteredProjects.map(proj => (
+                <ProjectCard
+                  key={proj.id}
+                  project={proj}
+                  selectable={true}
+                  selected={selectedIds.includes(proj.id)}
+                  onToggle={() => handleToggle(proj.id)}
+                />
+              ))}
             </div>
           )}
         </div>
