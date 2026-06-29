@@ -1,4 +1,4 @@
-import { MapPin, ArrowRight, Building2 } from 'lucide-react'
+import { MapPin, ArrowRight, Building2, IndianRupee } from 'lucide-react'
 import { Badge } from './Badge'
 
 export function ProjectCard({ project, onClick, selectable, selected, onToggle }) {
@@ -16,7 +16,7 @@ export function ProjectCard({ project, onClick, selectable, selected, onToggle }
   const content = (
     <>
       {/* Thumbnail */}
-      <div className="w-16 h-16 flex-shrink-0 bg-gray-100 relative rounded-xl overflow-hidden shadow-sm">
+      <div className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 bg-gray-100 relative rounded-xl overflow-hidden shadow-sm">
         {project.imageUrl ? (
           <img
             src={project.imageUrl}
@@ -32,18 +32,29 @@ export function ProjectCard({ project, onClick, selectable, selected, onToggle }
       </div>
 
       {/* Info */}
-      <div className="flex-1 min-w-0 py-1 text-left">
-        <p className="text-sm font-semibold text-kala-dark truncate">{project.name || project.id}</p>
-        {project.location && (
-          <div className="flex items-center gap-1 mt-0.5">
-            <MapPin size={11} className="text-gray-400 flex-shrink-0" />
-            <p className="text-xs text-gray-500 truncate">{project.location}</p>
-          </div>
-        )}
+      <div className="flex-1 min-w-0 py-1 text-left flex flex-col justify-center">
+        <p className="text-base font-bold text-kala-dark truncate">{project.name || project.id}</p>
+        
+        <div className="flex items-center gap-3 mt-1">
+          {project.location && (
+            <div className="flex items-center gap-1">
+              <MapPin size={13} className="text-gray-400 flex-shrink-0" />
+              <p className="text-xs font-medium text-gray-500 truncate">{project.location}</p>
+            </div>
+          )}
+          {project.projectValue && (
+            <div className="flex items-center gap-1">
+              <IndianRupee size={13} className="text-gray-400 flex-shrink-0" />
+              <p className="text-xs font-medium text-gray-500 truncate">{project.projectValue} Cr</p>
+            </div>
+          )}
+        </div>
+        
         {project.client && (
-          <p className="text-xs text-gray-400 truncate mt-0.5">{project.client}</p>
+          <p className="text-xs font-medium text-gray-400 truncate mt-1">{project.client}</p>
         )}
-        <div className="mt-1.5">
+        
+        <div className="mt-2">
           <Badge status={project.status || 'active'} />
         </div>
       </div>

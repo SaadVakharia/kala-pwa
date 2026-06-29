@@ -192,6 +192,46 @@ export default function CreateProject() {
       </div>
 
       <form onSubmit={handleSave} className="flex flex-col gap-6">
+
+        {/* Logo Pictures / Cover Image */}
+        <div className="flex justify-center mb-2">
+          <div className="w-[200px] h-[200px] sm:w-[240px] sm:h-[240px]">
+            {imagePreview ? (
+              <div className="relative rounded-[2rem] overflow-hidden w-full h-full bg-gray-100 border-4 border-white shadow-xl">
+                <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={clearImage}
+                  className="absolute top-3 right-3 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-colors backdrop-blur-md"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full h-full rounded-[2rem] border-2 border-dashed border-gray-300 bg-white hover:bg-gray-50 hover:border-kala-red/40 transition-all flex flex-col items-center justify-center gap-3 shadow-sm"
+              >
+                <div className="w-14 h-14 rounded-full bg-gray-50 flex items-center justify-center">
+                  <ImagePlus size={28} className="text-gray-400" />
+                </div>
+                <div className="text-center px-4">
+                  <span className="block text-sm font-bold text-gray-700">Upload Project Image</span>
+                  <span className="block text-xs text-gray-400 mt-1">JPG, PNG</span>
+                </div>
+              </button>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageChange}
+            />
+          </div>
+        </div>
+
         
         {/* Basic Details */}
         <div>
@@ -316,7 +356,7 @@ export default function CreateProject() {
                       <div className={`flex flex-col items-center justify-center py-4 text-center ${sf.file ? 'text-green-600' : 'text-gray-500 hover:text-kala-red transition-colors'}`}>
                         {sf.file ? <CheckCircle2 size={24} className="mb-2" /> : <FileText size={24} className="mb-2" />}
                         <span className="text-sm font-semibold">{sf.file ? 'File Selected' : 'Upload Document'}</span>
-                        <span className="text-[10px] text-gray-400 mt-1 truncate w-full px-4">{sf.file ? sf.file.name : 'PDF, DOC, JPG (Max 10MB)'}</span>
+                        <span className="text-[10px] text-gray-400 mt-1 truncate w-full px-4">{sf.file ? sf.file.name : 'PDF, DOC, JPG '}</span>
                       </div>
                     </div>
                     
@@ -339,49 +379,11 @@ export default function CreateProject() {
 
             <hr className="border-gray-100" />
 
-            {/* Logo Pictures / Cover Image */}
-            <div>
-              <h3 className="text-sm font-bold text-kala-dark mb-4">Logo Pictures (Cover Photo)</h3>
-              <div className="max-w-[240px]">
-                {imagePreview ? (
-                  <div className="relative rounded-xl overflow-hidden h-40 bg-gray-100 border border-gray-200 shadow-sm">
-                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={clearImage}
-                      className="absolute top-2 right-2 w-7 h-7 bg-black/50 rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-colors"
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full h-40 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 hover:bg-gray-100 hover:border-kala-red/40 transition-all flex flex-col items-center justify-center gap-2"
-                  >
-                    <ImagePlus size={24} className="text-gray-400" />
-                    <div className="text-center">
-                      <span className="block text-sm font-semibold text-gray-600">Upload Image</span>
-                      <span className="block text-xs text-gray-400 mt-0.5">JPG, PNG (Max 5MB)</span>
-                    </div>
-                  </button>
-                )}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageChange}
-                />
-              </div>
-            </div>
-
           </div>
         </div>
 
         {/* Action Bar */}
-        <div className="flex flex-col sm:flex-row gap-3 mt-2 sm:justify-end">
+        <div className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 flex flex-col sm:flex-row gap-3 z-50 bg-white/90 p-2.5 sm:p-3 rounded-2xl shadow-2xl backdrop-blur-xl border border-gray-200">
           <Button type="button" variant="outline" className="py-3.5 sm:py-2.5 sm:w-32 text-base sm:text-sm border-gray-200 order-2 sm:order-1" onClick={() => navigate(-1)} disabled={saving}>
             Cancel
           </Button>
