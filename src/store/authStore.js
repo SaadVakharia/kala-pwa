@@ -121,6 +121,30 @@ export const useAuthStore = create(
       sendOtp: async (phoneNumber, verifier) => {
         set({ loading: true, error: null })
         try {
+          // Check if number is registered first
+          try {
+            const profilesRef = collection(db, 'profiles');
+            
+            // Check if profiles is completely empty (first admin bootstrap)
+            const allProfilesQuery = query(profilesRef, limit(1));
+            const allProfilesSnap = await getDocs(allProfilesQuery);
+            
+            if (!allProfilesSnap.empty) {
+              // Profiles exist, so the user must be registered
+              const q = query(profilesRef, where('phone', '==', phoneNumber));
+              const querySnapshot = await getDocs(q);
+              
+              if (querySnapshot.empty) {
+                throw new Error("This number is not registered.");
+              }
+            }
+          } catch (e) {
+            if (e.message === "This number is not registered.") {
+              throw e;
+            }
+            console.warn("Could not check if phone is registered before OTP:", e);
+          }
+
           const appVerifier = verifier || window.recaptchaVerifier
           if (!appVerifier) throw new Error("reCAPTCHA not initialized")
           
