@@ -12,7 +12,7 @@ import { addDocument } from '../../api/firestore'
 import { storage } from '../../api/firebase'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import imageCompression from 'browser-image-compression'
-import { MapPin, Plus, Search, ImagePlus, X } from 'lucide-react'
+import { MapPin, Plus, Search, ImagePlus, X, Building2, Calendar, User, CheckCircle2 } from 'lucide-react'
 
 const STATUS_OPTS = ['active', 'on_hold', 'completed']
 
@@ -205,15 +205,16 @@ export default function AdminProjects() {
           </div>
 
           {[
-            { label: 'Project Name *', key: 'name', placeholder: 'e.g. Green Heights Tower', required: true },
-            { label: 'Location', key: 'location', placeholder: 'e.g. Mumbai, Maharashtra' },
-            { label: 'Client Name', key: 'client', placeholder: 'e.g. Rahul Developers' },
+            { label: 'Project Name *', key: 'name', placeholder: 'e.g. Green Heights Tower', required: true, icon: Building2 },
+            { label: 'Location', key: 'location', placeholder: 'e.g. Mumbai, Maharashtra', icon: MapPin },
+            { label: 'Client Name', key: 'client', placeholder: 'e.g. Rahul Developers', icon: User },
           ].map(f => (
             <Input
               key={f.key}
               label={f.label}
               placeholder={f.placeholder}
               value={form[f.key]}
+              leftIcon={f.icon}
               onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
               required={f.required}
             />
@@ -221,13 +222,18 @@ export default function AdminProjects() {
 
           <div className="flex flex-col gap-1.5">
             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-0.5">Status</label>
-            <select
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium text-kala-dark focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all cursor-pointer"
-              value={form.status}
-              onChange={e => setForm(p => ({ ...p, status: e.target.value }))}
-            >
-              {STATUS_OPTS.map(s => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}
-            </select>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <CheckCircle2 size={18} className="text-gray-400" />
+              </div>
+              <select
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium text-kala-dark focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all cursor-pointer appearance-none"
+                value={form.status}
+                onChange={e => setForm(p => ({ ...p, status: e.target.value }))}
+              >
+                {STATUS_OPTS.map(s => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}
+              </select>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -236,6 +242,7 @@ export default function AdminProjects() {
                 key={f.key}
                 label={f.label}
                 type="date"
+                leftIcon={Calendar}
                 value={form[f.key]}
                 onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
               />
