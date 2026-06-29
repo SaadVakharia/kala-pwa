@@ -438,59 +438,88 @@ export default function ProjectDetails() {
                 )}
               </div>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="flex flex-col gap-3">
                 {siteFiles.map((sf, index) => (
-                  <div key={index} className="relative p-4 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 flex flex-col gap-3 group">
+                  <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 bg-white border border-gray-200 rounded-xl shadow-sm">
+                    {sf.isNew ? (
+                      <>
+                        <div className="relative flex items-center justify-center w-12 h-12 rounded-lg bg-gray-50 border border-gray-100 flex-shrink-0 cursor-pointer hover:bg-gray-100 transition-colors">
+                          <input 
+                            type="file" 
+                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                            onChange={(e) => handleSiteFileChange(index, e.target.files[0])}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          />
+                          {sf.file ? <CheckCircle2 size={20} className="text-green-500" /> : <FileText size={20} className="text-gray-400" />}
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          {isEditing ? (
+                            <input 
+                              type="text" 
+                              placeholder="Document Name"
+                              value={sf.name}
+                              onChange={(e) => handleSiteFileNameChange(index, e.target.value)}
+                              className="w-full bg-transparent border-b border-transparent hover:border-gray-200 focus:border-kala-red px-1 py-1.5 text-sm font-semibold text-kala-dark focus:outline-none transition-colors"
+                            />
+                          ) : (
+                            <span className="px-1 text-sm font-semibold text-kala-dark block truncate">{sf.name}</span>
+                          )}
+                          {sf.file && <p className="text-[10px] text-gray-500 px-1 truncate mt-0.5">{sf.file.name}</p>}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <a href={sf.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-12 h-12 rounded-lg bg-gray-50 border border-gray-100 flex-shrink-0 hover:bg-red-50 hover:text-kala-red transition-colors text-gray-400">
+                          <FileText size={20} />
+                        </a>
+                        <div className="flex-1 min-w-0 flex flex-col justify-center">
+                          {isEditing ? (
+                            <input 
+                              type="text" 
+                              placeholder="Document Name"
+                              value={sf.name}
+                              onChange={(e) => handleSiteFileNameChange(index, e.target.value)}
+                              className="w-full bg-transparent border-b border-transparent hover:border-gray-200 focus:border-kala-red px-1 py-1.5 text-sm font-semibold text-kala-dark focus:outline-none transition-colors"
+                            />
+                          ) : (
+                            <a href={sf.url} target="_blank" rel="noopener noreferrer" className="px-1 text-sm font-semibold text-kala-dark hover:text-kala-red transition-colors block truncate">
+                              {sf.name}
+                            </a>
+                          )}
+                          <p className="text-[10px] text-gray-400 px-1 truncate mt-0.5">Click to view document</p>
+                        </div>
+                      </>
+                    )}
+
                     {isEditing && (
                       <button 
                         type="button" 
                         onClick={() => removeSiteFile(index)}
-                        className="absolute top-2 right-2 w-6 h-6 bg-red-100 text-kala-red rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                        className="p-2 text-gray-400 hover:text-kala-red hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
                       >
-                        <X size={12} />
+                        <Trash2 size={18} />
                       </button>
-                    )}
-                    
-                    {sf.isNew ? (
-                      <div className="relative">
-                        <input 
-                          type="file" 
-                          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                          onChange={(e) => handleSiteFileChange(index, e.target.files[0])}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        />
-                        <div className={`flex flex-col items-center justify-center py-4 text-center ${sf.file ? 'text-green-600' : 'text-gray-500 hover:text-kala-red transition-colors'}`}>
-                          {sf.file ? <CheckCircle2 size={24} className="mb-2" /> : <FileText size={24} className="mb-2" />}
-                          <span className="text-sm font-semibold">{sf.file ? 'File Selected' : 'Upload Document'}</span>
-                          <span className="text-[10px] text-gray-400 mt-1 truncate w-full px-4">{sf.file ? sf.file.name : 'PDF, DOC, JPG '}</span>
-                        </div>
-                      </div>
-                    ) : (
-                      <a href={sf.url} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center py-4 text-center text-kala-dark hover:text-kala-red transition-colors">
-                        <FileText size={32} className="mb-2 text-gray-400 group-hover:text-kala-red transition-colors" />
-                        <span className="text-sm font-semibold">{sf.name}</span>
-                        <span className="text-[10px] text-gray-400 mt-1">Click to view</span>
-                      </a>
-                    )}
-                    
-                    {isEditing && (
-                      <input 
-                        type="text" 
-                        placeholder="Document Name"
-                        value={sf.name}
-                        onChange={(e) => handleSiteFileNameChange(index, e.target.value)}
-                        className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-kala-red"
-                      />
                     )}
                   </div>
                 ))}
+                
                 {siteFiles.length === 0 && !isEditing && (
-                  <div className="col-span-full py-8 text-center text-gray-400 text-sm">No site documents attached.</div>
+                  <div className="py-6 text-center text-gray-400 text-sm">No site documents attached.</div>
                 )}
+                
                 {siteFiles.length === 0 && isEditing && (
-                  <div className="col-span-full p-6 border-2 border-dashed border-gray-200 rounded-xl text-center text-sm text-gray-400 font-medium flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-gray-50 hover:border-kala-red/30 transition-all" onClick={addSiteFile}>
-                    <Plus size={20} /> Click "Add Document" to upload site files
-                  </div>
+                  <button type="button" onClick={addSiteFile} className="w-full py-8 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 text-gray-500 hover:text-kala-red hover:border-kala-red/30 hover:bg-red-50/30 transition-colors flex flex-col items-center justify-center gap-2">
+                    <Plus size={24} className="text-gray-400" />
+                    <span className="text-sm font-semibold">Add First Document</span>
+                  </button>
+                )}
+
+                {siteFiles.length > 0 && isEditing && (
+                  <button type="button" onClick={addSiteFile} className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-500 hover:text-kala-dark hover:border-gray-300 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 mt-2">
+                    <Plus size={16} />
+                    <span className="text-sm font-semibold">Add Another Document</span>
+                  </button>
                 )}
               </div>
             </div>
@@ -504,11 +533,11 @@ export default function ProjectDetails() {
 
       {/* Action Bar */}
       {isEditing && (
-        <div className="sticky bottom-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200 py-3 sm:py-4 flex flex-col sm:flex-row gap-3 mt-8 -mx-5 px-5 sm:-mx-6 sm:px-6 md:-mx-8 md:px-8 justify-end shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
-          <Button type="button" variant="outline" className="py-3.5 sm:py-2.5 sm:w-32 text-base sm:text-sm border-gray-200 order-2 sm:order-1" onClick={handleCancel} disabled={saving}>
+        <div className="sticky bottom-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200 py-3 sm:py-4 grid grid-cols-2 sm:flex sm:flex-row gap-2 sm:gap-3 mt-8 -mx-5 px-5 sm:-mx-6 sm:px-6 md:-mx-8 md:px-8 justify-end shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
+          <Button type="button" variant="outline" className="w-full sm:w-32 py-2.5 text-sm border-gray-200" onClick={handleCancel} disabled={saving}>
             Cancel
           </Button>
-          <Button onClick={handleSave} loading={saving || uploadProgress} loadingLabel={uploadProgress ? "Uploading photo..." : "Saving..."} className="py-3.5 sm:py-2.5 sm:w-40 text-base sm:text-sm shadow-md order-1 sm:order-2">
+          <Button onClick={handleSave} loading={saving || uploadProgress} loadingLabel={uploadProgress ? "Uploading photo..." : "Saving..."} className="w-full sm:w-40 py-2.5 text-sm shadow-md">
             <Save size={18} className="mr-2 hidden sm:block" /> Save Changes
           </Button>
         </div>

@@ -547,11 +547,11 @@ export default function UserDetails() {
 
       {/* Action Bar */}
       {isEditing ? (
-        <div className="sticky bottom-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200 py-3 sm:py-4 flex flex-col sm:flex-row gap-3 mt-8 -mx-5 px-5 sm:-mx-6 sm:px-6 md:-mx-8 md:px-8 justify-end shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
-          <Button type="button" variant="outline" className="py-3.5 sm:py-2.5 sm:w-32 text-base sm:text-sm border-gray-200 order-2 sm:order-1" onClick={() => { setIsEditing(false); setForm(user); setAadharFile(null); setPanFile(null); }} disabled={saving}>
+        <div className="sticky bottom-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200 py-3 sm:py-4 grid grid-cols-2 sm:flex sm:flex-row gap-2 sm:gap-3 mt-8 -mx-5 px-5 sm:-mx-6 sm:px-6 md:-mx-8 md:px-8 justify-end shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
+          <Button type="button" variant="outline" className="w-full sm:w-32 py-2.5 text-sm border-gray-200" onClick={() => { setIsEditing(false); setForm(user); setAadharFile(null); setPanFile(null); }} disabled={saving}>
             Cancel
           </Button>
-          <Button onClick={handleSave} loading={saving} className="py-3.5 sm:py-2.5 sm:w-40 text-base sm:text-sm shadow-md order-1 sm:order-2">
+          <Button onClick={handleSave} loading={saving} className="w-full sm:w-40 py-2.5 text-sm shadow-md">
             <Save size={18} className="mr-2 hidden sm:block" /> Save Changes
           </Button>
         </div>
@@ -564,7 +564,7 @@ export default function UserDetails() {
           >
             <Trash2 size={18} /> Delete User
           </button>
-          <Button onClick={() => setIsEditing(true)} className="w-full sm:w-auto py-3.5 sm:py-2.5 shadow-md">
+          <Button onClick={() => setIsEditing(true)} className="w-full sm:w-auto py-2.5 shadow-md">
             Edit Details
           </Button>
         </div>
