@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { db, storage } from '../../api/firebase'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import imageCompression from 'browser-image-compression'
 import { useAuthStore, ROLES } from '../../store/authStore'
 import { Input } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
@@ -83,8 +84,16 @@ export default function ProjectDetails() {
 
       if (imageFile) {
         setUploadProgress(true)
-        const storageRef = ref(storage, `projects/${Date.now()}_${imageFile.name}`)
-        await uploadBytes(storageRef, imageFile)
+
+        const options = {
+          maxSizeMB: 0.2, // ~200KB max
+          maxWidthOrHeight: 800,
+          useWebWorker: true
+        }
+        const compressedFile = await imageCompression(imageFile, options)
+
+        const storageRef = ref(storage, `projects/${Date.now()}_${compressedFile.name}`)
+        await uploadBytes(storageRef, compressedFile)
         imageUrl = await getDownloadURL(storageRef)
         setUploadProgress(false)
       }

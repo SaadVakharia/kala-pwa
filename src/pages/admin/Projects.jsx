@@ -11,6 +11,7 @@ import { Button } from '../../components/ui/Button'
 import { addDocument } from '../../api/firestore'
 import { storage } from '../../api/firebase'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import imageCompression from 'browser-image-compression'
 import { MapPin, Plus, Search, ImagePlus, X } from 'lucide-react'
 
 const STATUS_OPTS = ['active', 'on_hold', 'completed']
@@ -65,8 +66,16 @@ export default function AdminProjects() {
 
       if (imageFile) {
         setUploadProgress(true)
-        const storageRef = ref(storage, `projects/${Date.now()}_${imageFile.name}`)
-        await uploadBytes(storageRef, imageFile)
+        
+        const options = {
+          maxSizeMB: 0.2, // ~200KB max
+          maxWidthOrHeight: 800,
+          useWebWorker: true
+        }
+        const compressedFile = await imageCompression(imageFile, options)
+
+        const storageRef = ref(storage, `projects/${Date.now()}_${compressedFile.name}`)
+        await uploadBytes(storageRef, compressedFile)
         imageUrl = await getDownloadURL(storageRef)
         setUploadProgress(false)
       }

@@ -22,6 +22,7 @@ export function ProjectCard({ project, onClick, selectable, selected, onToggle }
             src={project.imageUrl}
             alt={project.name}
             className="w-full h-full object-cover"
+            loading="lazy"
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-kala-red/10 to-kala-red/5 flex items-center justify-center">
