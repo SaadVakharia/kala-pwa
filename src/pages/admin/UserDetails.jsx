@@ -9,6 +9,7 @@ import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/shared/Badge'
 import { 
   ArrowLeft, User, Phone, Mail, BadgeCheck, Briefcase, 
+  Building, MapPin, UserSquare, ShieldCheck,
   Trash2, Edit2, Save, X, FileText, CreditCard
 } from 'lucide-react'
 import { AssignProjectsModal } from '../../components/shared/AssignProjectsModal'
