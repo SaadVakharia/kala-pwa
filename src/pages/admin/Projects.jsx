@@ -37,7 +37,7 @@ export default function AdminProjects() {
         title="Projects"
         subtitle={`${projects.length} total`}
         action={isAdmin && (
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setIsClientsModalOpen(true)}
               className="flex items-center gap-1.5 bg-white text-gray-700 border border-gray-200 text-sm font-medium px-4 py-2 rounded-xl hover:bg-gray-50 transition-all"
