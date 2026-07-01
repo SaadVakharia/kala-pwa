@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore, ROLE_LABELS, ROLES } from '../store/authStore'
+import { ChangelogModal } from '../components/shared/ChangelogModal'
 import {
   LayoutDashboard, MapPin, Users, FileText,
   ClipboardList, Bell, LogOut
@@ -48,6 +50,7 @@ function isActive(item, pathname) {
 export default function AppLayout() {
   const navigate = useNavigate()
   const location = useLocation()
+  const [showChangelog, setShowChangelog] = useState(false)
   const { role, user, fullName, logout } = useAuthStore()
 
   const navItems = NAV_CONFIG[role] || []
@@ -157,9 +160,12 @@ export default function AppLayout() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button className="p-2 rounded-full hover:bg-gray-100 relative">
+            <button 
+              onClick={() => setShowChangelog(true)}
+              className="p-2 rounded-full hover:bg-gray-100 relative transition-colors"
+            >
               <Bell size={20} className="text-kala-dark" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-kala-red rounded-full" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-kala-red rounded-full animate-pulse" />
             </button>
             <div className="md:hidden w-8 h-8 rounded-full bg-kala-red flex items-center justify-center">
               <span className="text-white text-xs font-bold">{initials}</span>
@@ -188,6 +194,9 @@ export default function AppLayout() {
         </nav>
 
       </div>
+      {/* CHANGELOG MODAL */}
+      <ChangelogModal open={showChangelog} onClose={() => setShowChangelog(false)} />
+
     </div>
   )
 }
