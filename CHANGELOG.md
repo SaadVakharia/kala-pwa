@@ -1,7 +1,7 @@
 # Project Progress Summary
 
 ## 2 July 2026
-- **App Notifications:** Added a "What's New" feature! Clicking the notification bell in the top corner now opens a pop-up showing all the latest app updates, features, and fixes.
+- **App Notifications:** Added an Admin-only "What's New" feature! Clicking the new sparkles icon (✨) next to the notification bell opens a pop-up showing all the latest app updates, features, and fixes.
 - **Image Editing:** Added an easy-to-use image cropping tool. When you upload a project cover photo or ID documents (like Aadhaar/PAN), you can now zoom and adjust the image before saving. PDF uploads work as usual without cropping.
 - **Smoother Navigation:** Improved the Projects and Team Members pages. They now load 6 items at a time with a "Load More" button, making the app faster and easier to scroll through.
 - **Document Center:** Organized project files! We removed the clutter from the project creation screen. Now, every project has a dedicated "Documents" tab with organized folders (Work Orders, Permits, Drawings, etc.). Admins can securely upload files and create custom folders.

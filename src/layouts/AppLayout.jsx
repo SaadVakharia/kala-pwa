@@ -4,7 +4,7 @@ import { useAuthStore, ROLE_LABELS, ROLES } from '../store/authStore'
 import { ChangelogModal } from '../components/shared/ChangelogModal'
 import {
   LayoutDashboard, MapPin, Users, FileText,
-  ClipboardList, Bell, LogOut
+  ClipboardList, Bell, LogOut, Sparkles
 } from 'lucide-react'
 
 const ADMIN_NAV = [
@@ -160,12 +160,19 @@ export default function AppLayout() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button 
-              onClick={() => setShowChangelog(true)}
-              className="p-2 rounded-full hover:bg-gray-100 relative transition-colors"
-            >
+            {role === ROLES.ADMIN && (
+              <button 
+                onClick={() => setShowChangelog(true)}
+                className="p-2 rounded-full hover:bg-gray-100 relative transition-colors text-kala-red"
+                title="What's New"
+              >
+                <Sparkles size={20} />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-kala-dark rounded-full animate-pulse" />
+              </button>
+            )}
+            <button className="p-2 rounded-full hover:bg-gray-100 relative">
               <Bell size={20} className="text-kala-dark" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-kala-red rounded-full animate-pulse" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-kala-red rounded-full" />
             </button>
             <div className="md:hidden w-8 h-8 rounded-full bg-kala-red flex items-center justify-center">
               <span className="text-white text-xs font-bold">{initials}</span>
