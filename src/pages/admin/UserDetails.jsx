@@ -13,6 +13,7 @@ import {
   Trash2, Edit2, Save, X, FileText, CreditCard, Upload, CheckCircle2, Plus
 } from 'lucide-react'
 import { AssignProjectsModal } from '../../components/shared/AssignProjectsModal'
+import { ImageCropModal } from '../../components/shared/ImageCropModal'
 
 
 
@@ -32,6 +33,11 @@ export default function UserDetails() {
   const [projects, setProjects] = useState([])
   const [projectManagers, setProjectManagers] = useState([])
   const [isProjectsModalOpen, setIsProjectsModalOpen] = useState(false)
+
+  // Crop modal state for document images
+  const [cropModalOpen, setCropModalOpen] = useState(false)
+  const [cropImageSrc, setCropImageSrc] = useState(null)
+  const [cropTarget, setCropTarget] = useState(null) // 'aadhar' or 'pan'
 
   useEffect(() => {
     async function fetchData() {
@@ -64,6 +70,39 @@ export default function UserDetails() {
 
   const handleInputChange = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }))
+  }
+
+  // Document image crop handlers
+  const handleDocFileChange = (target, file) => {
+    if (!file) return
+    // Only crop image files, pass PDFs through directly
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader()
+      reader.onload = (ev) => {
+        setCropImageSrc(ev.target.result)
+        setCropTarget(target)
+        setCropModalOpen(true)
+      }
+      reader.readAsDataURL(file)
+    } else {
+      // PDF — set directly
+      if (target === 'aadhar') setAadharFile(file)
+      else setPanFile(file)
+    }
+  }
+
+  const handleDocCropConfirm = (croppedFile, previewUrl) => {
+    if (cropTarget === 'aadhar') setAadharFile(croppedFile)
+    else if (cropTarget === 'pan') setPanFile(croppedFile)
+    setCropModalOpen(false)
+    setCropImageSrc(null)
+    setCropTarget(null)
+  }
+
+  const handleDocCropCancel = () => {
+    setCropModalOpen(false)
+    setCropImageSrc(null)
+    setCropTarget(null)
   }
 
   const handleSave = async () => {
@@ -324,7 +363,7 @@ export default function UserDetails() {
                       <input
                         type="file"
                         accept="image/*,.pdf"
-                        onChange={(e) => setAadharFile(e.target.files[0])}
+                        onChange={(e) => handleDocFileChange('aadhar', e.target.files[0])}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                       />
                       <div className={`flex items-center justify-center gap-2 border-2 border-dashed rounded-xl py-3 text-sm font-medium transition-all ${aadharFile ? 'border-green-300 bg-green-50 text-green-700' : 'border-gray-200 bg-gray-50 text-gray-500 hover:bg-gray-100 hover:border-kala-red/40'}`}>
@@ -367,7 +406,7 @@ export default function UserDetails() {
                       <input
                         type="file"
                         accept="image/*,.pdf"
-                        onChange={(e) => setPanFile(e.target.files[0])}
+                        onChange={(e) => handleDocFileChange('pan', e.target.files[0])}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                       />
                       <div className={`flex items-center justify-center gap-2 border-2 border-dashed rounded-xl py-3 text-sm font-medium transition-all ${panFile ? 'border-green-300 bg-green-50 text-green-700' : 'border-gray-200 bg-gray-50 text-gray-500 hover:bg-gray-100 hover:border-kala-red/40'}`}>
@@ -585,6 +624,15 @@ export default function UserDetails() {
           </Button>
         </div>
       )}
+
+      {/* Document Image Crop Modal */}
+      <ImageCropModal
+        open={cropModalOpen}
+        imageSrc={cropImageSrc}
+        aspectRatio={null}
+        onConfirm={handleDocCropConfirm}
+        onCancel={handleDocCropCancel}
+      />
 
     </div>
   )

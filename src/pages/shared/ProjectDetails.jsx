@@ -6,6 +6,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import imageCompression from 'browser-image-compression'
 import { useAuthStore, ROLES } from '../../store/authStore'
 import { Button } from '../../components/ui/Button'
+import { ImageCropModal } from '../../components/shared/ImageCropModal'
 import { Badge } from '../../components/shared/Badge'
 import { 
   ArrowLeft, Building2, MapPin, Edit2, Save, X, ImagePlus, User, Calendar, IndianRupee, FileText, CheckCircle2, Plus, Trash2, Upload
@@ -36,6 +37,10 @@ export default function ProjectDetails() {
   const fileInputRef = useRef()
 
   const [siteFiles, setSiteFiles] = useState([])
+
+  // Crop modal state
+  const [cropModalOpen, setCropModalOpen] = useState(false)
+  const [cropImageSrc, setCropImageSrc] = useState(null)
 
   useEffect(() => {
     async function fetchData() {
@@ -71,10 +76,26 @@ export default function ProjectDetails() {
   const handleImageChange = (e) => {
     const file = e.target.files[0]
     if (!file) return
-    setImageFile(file)
+    // Open crop modal instead of directly setting preview
     const reader = new FileReader()
-    reader.onload = (ev) => setImagePreview(ev.target.result)
+    reader.onload = (ev) => {
+      setCropImageSrc(ev.target.result)
+      setCropModalOpen(true)
+    }
     reader.readAsDataURL(file)
+  }
+
+  const handleCropConfirm = (croppedFile, previewUrl) => {
+    setImageFile(croppedFile)
+    setImagePreview(previewUrl)
+    setCropModalOpen(false)
+    setCropImageSrc(null)
+  }
+
+  const handleCropCancel = () => {
+    setCropModalOpen(false)
+    setCropImageSrc(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   const clearImage = () => {
@@ -536,6 +557,15 @@ export default function ProjectDetails() {
           </Button>
         </div>
       )}
+
+      {/* Image Crop Modal */}
+      <ImageCropModal
+        open={cropModalOpen}
+        imageSrc={cropImageSrc}
+        aspectRatio={1}
+        onConfirm={handleCropConfirm}
+        onCancel={handleCropCancel}
+      />
     </div>
   )
 }

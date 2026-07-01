@@ -6,6 +6,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import imageCompression from 'browser-image-compression'
 import { Input } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
+import { ImageCropModal } from '../../components/shared/ImageCropModal'
 import { ArrowLeft, Building2, MapPin, IndianRupee, ImagePlus, X, FileText, Plus, Upload, CheckCircle2, Trash2 } from 'lucide-react'
 
 // Simple modal for adding a client inline
@@ -73,6 +74,10 @@ export default function CreateProject() {
   const [imagePreview, setImagePreview] = useState(null)
   const fileInputRef = useRef()
 
+  // Crop modal state
+  const [cropModalOpen, setCropModalOpen] = useState(false)
+  const [cropImageSrc, setCropImageSrc] = useState(null)
+
   // Site files
   const [siteFiles, setSiteFiles] = useState([])
 
@@ -98,10 +103,26 @@ export default function CreateProject() {
   const handleImageChange = (e) => {
     const file = e.target.files[0]
     if (!file) return
-    setImageFile(file)
+    // Open crop modal instead of directly setting preview
     const reader = new FileReader()
-    reader.onload = (ev) => setImagePreview(ev.target.result)
+    reader.onload = (ev) => {
+      setCropImageSrc(ev.target.result)
+      setCropModalOpen(true)
+    }
     reader.readAsDataURL(file)
+  }
+
+  const handleCropConfirm = (croppedFile, previewUrl) => {
+    setImageFile(croppedFile)
+    setImagePreview(previewUrl)
+    setCropModalOpen(false)
+    setCropImageSrc(null)
+  }
+
+  const handleCropCancel = () => {
+    setCropModalOpen(false)
+    setCropImageSrc(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   const clearImage = () => {
@@ -422,6 +443,15 @@ export default function CreateProject() {
           setClients(prev => [...prev, newClient].sort((a, b) => a.name.localeCompare(b.name)))
           setForm(prev => ({ ...prev, clientId: newClient.id }))
         }}
+      />
+
+      {/* Image Crop Modal */}
+      <ImageCropModal
+        open={cropModalOpen}
+        imageSrc={cropImageSrc}
+        aspectRatio={1}
+        onConfirm={handleCropConfirm}
+        onCancel={handleCropCancel}
       />
     </div>
   )
