@@ -113,9 +113,7 @@ export default function AppLayout() {
       <aside className="hidden md:flex flex-col bg-kala-dark w-16 xl:w-56 flex-shrink-0 h-full transition-all duration-200">
         <div className="flex items-center justify-center xl:justify-start px-3 xl:px-4 py-4 border-b border-white/10 h-16 flex-shrink-0">
           <img src="/logo.png" alt="KALA" className="h-7 object-contain brightness-0 invert hidden xl:block" />
-          <div className="xl:hidden w-8 h-8 bg-kala-red rounded-lg flex items-center justify-center">
-            <span className="text-white text-xs font-black">K</span>
-          </div>
+          <img src="/favicon.png" alt="KALA" className="h-8 w-8 object-contain xl:hidden rounded-lg" />
         </div>
 
         <nav className="flex-1 overflow-y-auto px-2 py-4 flex flex-col gap-1">
@@ -149,7 +147,7 @@ export default function AppLayout() {
       {/* MAIN CONTENT */}
       <div className="flex flex-col flex-1 min-w-0 h-full overflow-hidden">
 
-        <header className="bg-white border-b border-kala-border px-4 h-16 flex items-center justify-between flex-shrink-0 z-10">
+        <header className="app-header bg-white border-b border-kala-border px-4 flex items-center justify-between flex-shrink-0 z-10">
           <div className="md:hidden">
             <img src="/logo.png" alt="KALA" className="h-8 object-contain" />
           </div>

@@ -35,6 +35,11 @@
     display: flex;
     overflow: hidden;
   }
+
+  .app-header {
+    height: calc(4rem + env(safe-area-inset-top));
+    padding-top: env(safe-area-inset-top);
+  }
 }
 
 @layer utilities {
