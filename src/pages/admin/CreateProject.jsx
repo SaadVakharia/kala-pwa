@@ -1,13 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { collection, getDocs, addDoc, serverTimestamp } from 'firebase/firestore'
-import { db, storage, uploadFile } from '../../api/firebase'
+import { db, storage } from '../../api/firebase'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import imageCompression from 'browser-image-compression'
 import { Input } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
 import { ImageCropModal } from '../../components/shared/ImageCropModal'
-import { ArrowLeft, Building2, MapPin, IndianRupee, ImagePlus, X, FileText, Plus, Upload, CheckCircle2, Trash2 } from 'lucide-react'
+import { ArrowLeft, Building2, MapPin, IndianRupee, ImagePlus, X, Plus } from 'lucide-react'
 
 // Simple modal for adding a client inline
 function AddClientModal({ isOpen, onClose, onSave }) {
@@ -78,8 +78,7 @@ export default function CreateProject() {
   const [cropModalOpen, setCropModalOpen] = useState(false)
   const [cropImageSrc, setCropImageSrc] = useState(null)
 
-  // Site files
-  const [siteFiles, setSiteFiles] = useState([])
+
 
   useEffect(() => {
     async function fetchClients() {
@@ -131,22 +130,7 @@ export default function CreateProject() {
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
-  const addSiteFile = () => {
-    setSiteFiles(prev => [...prev, { id: Date.now().toString(), name: '', file: null }])
-  }
 
-  const removeSiteFile = (id) => {
-    setSiteFiles(prev => prev.filter(f => f.id !== id))
-  }
-
-  const handleSiteFileChange = (id, file) => {
-    if (!file) return
-    setSiteFiles(prev => prev.map(f => f.id === id ? { ...f, file } : f))
-  }
-
-  const handleSiteFileNameChange = (id, name) => {
-    setSiteFiles(prev => prev.map(f => f.id === id ? { ...f, name } : f))
-  }
 
   const handleSave = async (e) => {
     e.preventDefault()
@@ -164,25 +148,11 @@ export default function CreateProject() {
         imageUrl = await getDownloadURL(storageRef)
       }
 
-      // Upload site files
-      const uploadedSiteFiles = []
-      for (const sf of siteFiles) {
-        if (sf.file) {
-          const url = await uploadFile(`project_files/${Date.now()}_${sf.file.name}`, sf.file)
-          uploadedSiteFiles.push({
-            name: sf.name || sf.file.name,
-            url,
-            type: sf.file.type,
-            size: sf.file.size
-          })
-        }
-      }
-
       const newProject = {
         ...form,
         status: 'active',
         imageUrl,
-        siteFiles: uploadedSiteFiles,
+        customFolders: [],
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       }
@@ -342,87 +312,7 @@ export default function CreateProject() {
           </div>
         </div>
 
-        {/* Site Files */}
-        <div>
-          <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 px-1">Site Files</h2>
-          <div className="bg-white rounded-3xl border border-gray-200 p-5 sm:p-6 shadow-sm flex flex-col gap-8">
-            
-            {/* Documents Related to Site */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold text-kala-dark">Documents Related to Site</h3>
-                <Button type="button" size="sm" variant="outline" onClick={addSiteFile} className="h-8 px-3 text-xs">
-                  <Plus size={14} className="mr-1" /> Add Document
-                </Button>
-              </div>
-              
-              <div className="flex flex-col gap-4">
-                {siteFiles.map((sf) => (
-                  <div key={sf.id} className="bg-gray-50 border border-gray-200 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row gap-4 items-stretch md:items-center relative shadow-sm">
-                    {/* Delete button */}
-                    <button 
-                      type="button" 
-                      onClick={() => removeSiteFile(sf.id)}
-                      className="absolute top-4 right-4 md:relative md:top-auto md:right-auto p-2 text-gray-400 hover:text-kala-red hover:bg-red-50 rounded-xl transition-all self-start md:self-auto"
-                      title="Remove document row"
-                    >
-                      <Trash2 size={18} />
-                    </button>
 
-                    {/* Document Info Column */}
-                    <div className="flex-1 flex flex-col gap-1.5 pr-8 md:pr-0">
-                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Document Name</label>
-                      <input 
-                        type="text" 
-                        placeholder="e.g. BOQ, Structural Plan, Invoice"
-                        value={sf.name}
-                        onChange={(e) => handleSiteFileNameChange(sf.id, e.target.value)}
-                        className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm font-semibold text-kala-dark focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all shadow-sm"
-                      />
-                    </div>
-
-                    {/* File Attachment Area */}
-                    <div className="w-full md:w-72 flex flex-col gap-1.5">
-                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Attachment</label>
-                      <div className="relative h-[42px] w-full">
-                        <input 
-                          type="file" 
-                          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                          onChange={(e) => handleSiteFileChange(sf.id, e.target.files[0])}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                        />
-                        <div className={`w-full h-full border rounded-xl flex items-center justify-between px-3.5 text-xs font-semibold transition-all ${sf.file ? 'border-green-200 bg-green-50/50 text-green-700' : 'border-gray-200 bg-white text-gray-500 hover:border-kala-red/40 hover:bg-gray-50'}`}>
-                          <div className="flex items-center gap-2 truncate pr-2">
-                            {sf.file ? <CheckCircle2 size={16} className="text-green-600 shrink-0" /> : <Upload size={16} className="text-gray-400 shrink-0" />}
-                            <span className="truncate">{sf.file ? sf.file.name : 'Select PDF or Image'}</span>
-                          </div>
-                          <span className="text-[10px] text-gray-400 shrink-0 font-bold bg-gray-50 border border-gray-100 rounded-md px-2 py-0.5">
-                            {sf.file ? 'Change' : 'Browse'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                
-                {siteFiles.length === 0 ? (
-                  <button type="button" onClick={addSiteFile} className="w-full py-8 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 text-gray-500 hover:text-kala-red hover:border-kala-red/30 hover:bg-red-50/30 transition-colors flex flex-col items-center justify-center gap-2">
-                    <Plus size={24} className="text-gray-400" />
-                    <span className="text-sm font-semibold">Add First Document</span>
-                  </button>
-                ) : (
-                  <button type="button" onClick={addSiteFile} className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-500 hover:text-kala-dark hover:border-gray-300 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 mt-2">
-                    <Plus size={16} />
-                    <span className="text-sm font-semibold">Add Another Document</span>
-                  </button>
-                )}
-              </div>
-            </div>
-
-            <hr className="border-gray-100" />
-
-          </div>
-        </div>
 
         {/* Action Bar */}
         <div className="flex flex-col sm:flex-row gap-3 mt-8 justify-end">

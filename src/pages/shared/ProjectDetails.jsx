@@ -1,15 +1,16 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { doc, getDoc, setDoc, serverTimestamp, collection, getDocs } from 'firebase/firestore'
-import { db, storage, uploadFile, deleteFile } from '../../api/firebase'
+import { db, storage, deleteFile } from '../../api/firebase'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import imageCompression from 'browser-image-compression'
 import { useAuthStore, ROLES } from '../../store/authStore'
 import { Button } from '../../components/ui/Button'
 import { ImageCropModal } from '../../components/shared/ImageCropModal'
+import { DocumentCenter } from '../../components/shared/DocumentCenter'
 import { Badge } from '../../components/shared/Badge'
 import { 
-  ArrowLeft, Building2, MapPin, Edit2, Save, X, ImagePlus, User, Calendar, IndianRupee, FileText, CheckCircle2, Plus, Trash2, Upload
+  ArrowLeft, Building2, MapPin, Edit2, Save, X, ImagePlus, User, Calendar, IndianRupee, FolderOpen
 } from 'lucide-react'
 
 const STATUS_OPTS = ['active', 'on_hold', 'completed']
@@ -36,7 +37,11 @@ export default function ProjectDetails() {
   const [uploadProgress, setUploadProgress] = useState(false)
   const fileInputRef = useRef()
 
-  const [siteFiles, setSiteFiles] = useState([])
+  // Tab state
+  const [activeTab, setActiveTab] = useState('details')
+
+  // Custom folders (from project doc)
+  const [customFolders, setCustomFolders] = useState([])
 
   // Crop modal state
   const [cropModalOpen, setCropModalOpen] = useState(false)
@@ -51,7 +56,7 @@ export default function ProjectDetails() {
           setProject(data)
           setForm(data)
           setImagePreview(data.imageUrl || null)
-          setSiteFiles(data.siteFiles || [])
+          setCustomFolders(data.customFolders || [])
         } else {
           setProject(null)
         }
@@ -105,22 +110,7 @@ export default function ProjectDetails() {
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
-  const addSiteFile = () => {
-    setSiteFiles(prev => [...prev, { id: Date.now().toString(), name: '', file: null, isNew: true }])
-  }
 
-  const removeSiteFile = (index) => {
-    setSiteFiles(prev => prev.filter((_, i) => i !== index))
-  }
-
-  const handleSiteFileChange = (index, file) => {
-    if (!file) return
-    setSiteFiles(prev => prev.map((f, i) => i === index ? { ...f, file } : f))
-  }
-
-  const handleSiteFileNameChange = (index, name) => {
-    setSiteFiles(prev => prev.map((f, i) => i === index ? { ...f, name } : f))
-  }
 
   const handleSave = async () => {
     setSaving(true)
@@ -137,47 +127,21 @@ export default function ProjectDetails() {
         setUploadProgress(false)
       }
 
-      const finalSiteFiles = []
-      for (const sf of siteFiles) {
-        if (sf.isNew && sf.file) {
-          const url = await uploadFile(`project_files/${Date.now()}_${sf.file.name}`, sf.file)
-          finalSiteFiles.push({
-            name: sf.name || sf.file.name,
-            url,
-            type: sf.file.type,
-            size: sf.file.size
-          })
-        } else if (!sf.isNew) {
-          finalSiteFiles.push({ ...sf })
-        }
-      }
-
       const updatedData = {
         ...form,
         imageUrl: imageUrl || null,
-        siteFiles: finalSiteFiles,
         updatedAt: serverTimestamp()
       }
 
-            await setDoc(doc(db, 'projects', id), updatedData, { merge: true })
+      await setDoc(doc(db, 'projects', id), updatedData, { merge: true })
       
       // Delete old cover image if it was changed
       if (project.imageUrl && imageUrl !== project.imageUrl) {
         await deleteFile(project.imageUrl);
       }
 
-      // Delete unlinked site files from storage
-      const newUrls = finalSiteFiles.map(f => f.url);
-      const deletedFiles = (project.siteFiles || []).filter(f => !newUrls.includes(f.url));
-      for (const df of deletedFiles) {
-        if (df.url) {
-          await deleteFile(df.url);
-        }
-      }
-
       setProject({ ...updatedData, id })
       setIsEditing(false)
-      setSiteFiles(finalSiteFiles)
       setImageFile(null)
     } catch (err) {
       console.error('Failed to update project:', err)
@@ -191,7 +155,6 @@ export default function ProjectDetails() {
     setForm(project)
     setImagePreview(project?.imageUrl || null)
     setImageFile(null)
-    setSiteFiles(project?.siteFiles || [])
     setIsEditing(false)
   }
 
@@ -241,6 +204,33 @@ export default function ProjectDetails() {
         )}
       </div>
 
+      {/* Tab Bar */}
+      <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
+        <button
+          onClick={() => setActiveTab('details')}
+          className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+            activeTab === 'details'
+              ? 'bg-white text-kala-dark shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <Building2 size={15} className="inline-block mr-1.5 -mt-0.5" />
+          Details
+        </button>
+        <button
+          onClick={() => setActiveTab('documents')}
+          className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+            activeTab === 'documents'
+              ? 'bg-white text-kala-dark shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <FolderOpen size={15} className="inline-block mr-1.5 -mt-0.5" />
+          Documents
+        </button>
+      </div>
+
+      {activeTab === 'details' && (
       <div className="flex flex-col gap-6">
 
         {/* Logo Pictures / Cover Image */}
@@ -466,85 +456,18 @@ export default function ProjectDetails() {
           </div>
         </div>
 
-        {/* Site Files Section */}
-        <div>
-          <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 px-1">Site Files</h2>
-          <div className="bg-white rounded-3xl border border-gray-200 p-5 sm:p-6 shadow-sm flex flex-col gap-8">
-            
-            {/* Documents Related to Site */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold text-kala-dark">Documents Related to Site</h3>
-                {isEditing && (
-                  <Button type="button" size="sm" variant="outline" onClick={addSiteFile} className="h-8 px-3 text-xs">
-                    <Plus size={14} className="mr-1" /> Add Document
-                  </Button>
-                )}
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {siteFiles.map((sf, index) => (
-                  <div key={index} className="relative p-4 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 flex flex-col gap-3 group">
-                    {isEditing && (
-                      <button 
-                        type="button" 
-                        onClick={() => removeSiteFile(index)}
-                        className="absolute top-2 right-2 w-6 h-6 bg-red-100 text-kala-red rounded-full flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10"
-                      >
-                        <X size={12} />
-                      </button>
-                    )}
-                    
-                    {sf.isNew ? (
-                      <div className="relative">
-                        <input 
-                          type="file" 
-                          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                          onChange={(e) => handleSiteFileChange(index, e.target.files[0])}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        />
-                        <div className={`flex flex-col items-center justify-center py-4 text-center ${sf.file ? 'text-green-600' : 'text-gray-500 hover:text-kala-red transition-colors'}`}>
-                          {sf.file ? <CheckCircle2 size={24} className="mb-2" /> : <FileText size={24} className="mb-2" />}
-                          <span className="text-sm font-semibold">{sf.file ? 'File Selected' : 'Upload Document'}</span>
-                          <span className="text-[10px] text-gray-400 mt-1 truncate w-full px-4">{sf.file ? sf.file.name : 'PDF, DOC, JPG '}</span>
-                        </div>
-                      </div>
-                    ) : (
-                      <a href={sf.url} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center justify-center py-4 text-center text-kala-dark hover:text-kala-red transition-colors">
-                        <FileText size={32} className="mb-2 text-gray-400 group-hover:text-kala-red transition-colors" />
-                        <span className="text-sm font-semibold">{sf.name}</span>
-                        <span className="text-[10px] text-gray-400 mt-1">Click to view</span>
-                      </a>
-                    )}
-                    
-                    {isEditing && (
-                      <input 
-                        type="text" 
-                        placeholder="Document Name"
-                        value={sf.name}
-                        onChange={(e) => handleSiteFileNameChange(index, e.target.value)}
-                        className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-kala-red"
-                      />
-                    )}
-                  </div>
-                ))}
-                {siteFiles.length === 0 && !isEditing && (
-                  <div className="col-span-full py-8 text-center text-gray-400 text-sm">No site documents attached.</div>
-                )}
-                {siteFiles.length === 0 && isEditing && (
-                  <div className="col-span-full p-6 border-2 border-dashed border-gray-200 rounded-xl text-center text-sm text-gray-400 font-medium flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-gray-50 hover:border-kala-red/30 transition-all" onClick={addSiteFile}>
-                    <Plus size={20} /> Click "Add Document" to upload site files
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <hr className="border-gray-100" />
-
-          </div>
-        </div>
-
       </div>
+      )}
+
+      {/* Document Center Tab */}
+      {activeTab === 'documents' && (
+        <DocumentCenter
+          projectId={id}
+          isAdmin={isAdmin}
+          customFolders={customFolders}
+          onCustomFoldersChange={setCustomFolders}
+        />
+      )}
 
       {/* Action Bar */}
       {isEditing && (
