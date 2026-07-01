@@ -7,7 +7,7 @@ import { EmptyState } from '../../components/shared/EmptyState'
 import { useAuthStore, ROLES } from '../../store/authStore'
 import { Input } from '../../components/ui/Input'
 import { ManageClientsModal } from '../../components/shared/ManageClientsModal'
-import { Plus, Search, Users } from 'lucide-react'
+import { Plus, Search, Users, ChevronDown } from 'lucide-react'
 
 const STATUS_OPTS = ['active', 'on_hold', 'completed']
 
@@ -21,6 +21,7 @@ export default function AdminProjects() {
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [isClientsModalOpen, setIsClientsModalOpen] = useState(false)
+  const [visibleCount, setVisibleCount] = useState(6)
 
   const filtered = projects.filter(p => {
     const matchSearch = p.name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -28,6 +29,9 @@ export default function AdminProjects() {
     const matchStatus = filterStatus === 'all' || p.status === filterStatus
     return matchSearch && matchStatus
   })
+
+  const visibleProjects = filtered.slice(0, visibleCount)
+  const hasMore = visibleCount < filtered.length
 
   return (
     <div>
@@ -89,13 +93,26 @@ export default function AdminProjects() {
         />
       ) : (
         <div className="flex flex-col gap-3 sm:gap-4">
-          {filtered.map(p => (
+          {visibleProjects.map(p => (
             <ProjectCard
               key={p.id}
               project={p}
               onClick={() => navigate(`${location.pathname}/${p.id}`)}
             />
           ))}
+        </div>
+      )}
+
+      {/* Load More */}
+      {!loading && hasMore && (
+        <div className="flex justify-center mt-6">
+          <button
+            onClick={() => setVisibleCount(prev => prev + 6)}
+            className="flex items-center gap-2 px-6 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:text-kala-dark hover:border-gray-300 hover:shadow-sm transition-all"
+          >
+            <ChevronDown size={16} />
+            Load More ({filtered.length - visibleCount} remaining)
+          </button>
         </div>
       )}
     </div>

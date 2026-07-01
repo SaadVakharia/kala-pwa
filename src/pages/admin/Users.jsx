@@ -8,7 +8,7 @@ import { Input } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
 import { updateDocument } from '../../api/firestore'
 import { useAuthStore, ROLE_LABELS, ROLES } from '../../store/authStore'
-import { Users, Search, Shield, Plus } from 'lucide-react'
+import { Users, Search, Shield, Plus, ChevronDown } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 export default function AdminUsers() {
@@ -16,6 +16,7 @@ export default function AdminUsers() {
   const { users, loading } = useUsers()
   const [search, setSearch] = useState('')
   const [filterRole, setFilterRole] = useState('all')
+  const [visibleCount, setVisibleCount] = useState(6)
 
   const filtered = users.filter(u => {
     const matchSearch =
@@ -24,6 +25,9 @@ export default function AdminUsers() {
     const matchRole = filterRole === 'all' || u.role === filterRole
     return matchSearch && matchRole
   })
+
+  const visibleUsers = filtered.slice(0, visibleCount)
+  const hasMore = visibleCount < filtered.length
 
   return (
     <div>
@@ -66,7 +70,7 @@ export default function AdminUsers() {
         <EmptyState icon={Users} title="No users found" subtitle="Users appear here after they log in for the first time" />
       ) : (
         <div className="flex flex-col gap-3 sm:gap-4">
-          {filtered.map(u => (
+          {visibleUsers.map(u => (
             <button
               key={u.id}
               onClick={() => navigate(`/admin/users/${u.id}`)}
@@ -90,6 +94,19 @@ export default function AdminUsers() {
               </div>
             </button>
           ))}
+        </div>
+      )}
+
+      {/* Load More */}
+      {!loading && hasMore && (
+        <div className="flex justify-center mt-6">
+          <button
+            onClick={() => setVisibleCount(prev => prev + 6)}
+            className="flex items-center gap-2 px-6 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:text-kala-dark hover:border-gray-300 hover:shadow-sm transition-all"
+          >
+            <ChevronDown size={16} />
+            Load More ({filtered.length - visibleCount} remaining)
+          </button>
         </div>
       )}
     </div>
