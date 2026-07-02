@@ -12,7 +12,6 @@ import {
   CreditCard, FileText, Upload, Plus
 } from 'lucide-react'
 import { AssignProjectsModal } from '../../components/shared/AssignProjectsModal'
-import { ImageCropModal } from '../../components/shared/ImageCropModal'
 
 // ROLE_PERMISSIONS removed as summary is no longer needed
 
@@ -23,11 +22,6 @@ export default function CreateUser() {
   const [isProjectsModalOpen, setIsProjectsModalOpen] = useState(false)
   const [aadharFile, setAadharFile] = useState(null)
   const [panFile, setPanFile] = useState(null)
-
-  // Crop modal state for document images
-  const [cropModalOpen, setCropModalOpen] = useState(false)
-  const [cropImageSrc, setCropImageSrc] = useState(null)
-  const [cropTarget, setCropTarget] = useState(null) // 'aadhar' or 'pan'
 
   const [form, setForm] = useState({
     fullName: '',
@@ -83,37 +77,10 @@ export default function CreateUser() {
     })
   }
 
-  // Document image crop handlers
   const handleDocFileChange = (target, file) => {
     if (!file) return
-    // Only crop image files, pass PDFs through directly
-    if (file.type.startsWith('image/')) {
-      const reader = new FileReader()
-      reader.onload = (ev) => {
-        setCropImageSrc(ev.target.result)
-        setCropTarget(target)
-        setCropModalOpen(true)
-      }
-      reader.readAsDataURL(file)
-    } else {
-      // PDF — set directly
-      if (target === 'aadhar') setAadharFile(file)
-      else setPanFile(file)
-    }
-  }
-
-  const handleDocCropConfirm = (croppedFile, previewUrl) => {
-    if (cropTarget === 'aadhar') setAadharFile(croppedFile)
-    else if (cropTarget === 'pan') setPanFile(croppedFile)
-    setCropModalOpen(false)
-    setCropImageSrc(null)
-    setCropTarget(null)
-  }
-
-  const handleDocCropCancel = () => {
-    setCropModalOpen(false)
-    setCropImageSrc(null)
-    setCropTarget(null)
+    if (target === 'aadhar') setAadharFile(file)
+    else setPanFile(file)
   }
 
   const handleSubmit = async (e) => {
@@ -434,15 +401,6 @@ export default function CreateUser() {
             <User size={18} className="mr-2 hidden sm:block" /> Create User
           </Button>
         </div>
-
-        {/* Document Image Crop Modal */}
-        <ImageCropModal
-          open={cropModalOpen}
-          imageSrc={cropImageSrc}
-          aspectRatio={null}
-          onConfirm={handleDocCropConfirm}
-          onCancel={handleDocCropCancel}
-        />
       </form>
     </div>
   )
