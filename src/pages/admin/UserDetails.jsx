@@ -13,7 +13,6 @@ import {
   Trash2, Edit2, Save, X, FileText, CreditCard, Upload, CheckCircle2, Plus
 } from 'lucide-react'
 import { AssignProjectsModal } from '../../components/shared/AssignProjectsModal'
-import { ImageCropModal } from '../../components/shared/ImageCropModal'
 
 
 
@@ -33,11 +32,6 @@ export default function UserDetails() {
   const [projects, setProjects] = useState([])
   const [projectManagers, setProjectManagers] = useState([])
   const [isProjectsModalOpen, setIsProjectsModalOpen] = useState(false)
-
-  // Crop modal state for document images
-  const [cropModalOpen, setCropModalOpen] = useState(false)
-  const [cropImageSrc, setCropImageSrc] = useState(null)
-  const [cropTarget, setCropTarget] = useState(null) // 'aadhar' or 'pan'
 
   useEffect(() => {
     async function fetchData() {
@@ -72,37 +66,10 @@ export default function UserDetails() {
     setForm(prev => ({ ...prev, [field]: value }))
   }
 
-  // Document image crop handlers
   const handleDocFileChange = (target, file) => {
     if (!file) return
-    // Only crop image files, pass PDFs through directly
-    if (file.type.startsWith('image/')) {
-      const reader = new FileReader()
-      reader.onload = (ev) => {
-        setCropImageSrc(ev.target.result)
-        setCropTarget(target)
-        setCropModalOpen(true)
-      }
-      reader.readAsDataURL(file)
-    } else {
-      // PDF — set directly
-      if (target === 'aadhar') setAadharFile(file)
-      else setPanFile(file)
-    }
-  }
-
-  const handleDocCropConfirm = (croppedFile, previewUrl) => {
-    if (cropTarget === 'aadhar') setAadharFile(croppedFile)
-    else if (cropTarget === 'pan') setPanFile(croppedFile)
-    setCropModalOpen(false)
-    setCropImageSrc(null)
-    setCropTarget(null)
-  }
-
-  const handleDocCropCancel = () => {
-    setCropModalOpen(false)
-    setCropImageSrc(null)
-    setCropTarget(null)
+    if (target === 'aadhar') setAadharFile(file)
+    else setPanFile(file)
   }
 
   const handleSave = async () => {
@@ -624,15 +591,6 @@ export default function UserDetails() {
           </Button>
         </div>
       )}
-
-      {/* Document Image Crop Modal */}
-      <ImageCropModal
-        open={cropModalOpen}
-        imageSrc={cropImageSrc}
-        aspectRatio={null}
-        onConfirm={handleDocCropConfirm}
-        onCancel={handleDocCropCancel}
-      />
 
     </div>
   )
