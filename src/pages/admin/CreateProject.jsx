@@ -4,56 +4,12 @@ import { collection, getDocs, addDoc, serverTimestamp } from 'firebase/firestore
 import { db, storage } from '../../api/firebase'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import imageCompression from 'browser-image-compression'
-import { Input } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
 import { ImageCropModal } from '../../components/shared/ImageCropModal'
-import { ArrowLeft, Building2, MapPin, IndianRupee, ImagePlus, X, Plus } from 'lucide-react'
-
-// Simple modal for adding a client inline
-function AddClientModal({ isOpen, onClose, onSave }) {
-  const [name, setName] = useState('')
-  const [saving, setSaving] = useState(false)
-
-  if (!isOpen) return null
-
-  const handleSave = async () => {
-    if (!name.trim()) return
-    setSaving(true)
-    try {
-      const docRef = await addDoc(collection(db, 'clients'), {
-        name: name.trim(),
-        createdAt: serverTimestamp()
-      })
-      onSave({ id: docRef.id, name: name.trim() })
-      setName('')
-      onClose()
-    } catch (err) {
-      console.error(err)
-      alert('Failed to add client')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
-        <h3 className="text-lg font-bold text-kala-dark mb-4">Add New Client</h3>
-        <Input 
-          label="Client Name" 
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="e.g. Rahul Developers"
-          autoFocus
-        />
-        <div className="flex gap-3 mt-6 justify-end">
-          <Button variant="outline" onClick={onClose} disabled={saving}>Cancel</Button>
-          <Button onClick={handleSave} loading={saving}>Add Client</Button>
-        </div>
-      </div>
-    </div>
-  )
-}
+import { ArrowLeft, Building2 } from 'lucide-react'
+import { AddClientModal } from '../../components/admin/projects/AddClientModal'
+import { ProjectBasicDetailsSection } from '../../components/admin/projects/ProjectBasicDetailsSection'
+import { ProjectImageUploadSection } from '../../components/admin/projects/ProjectImageUploadSection'
 
 export default function CreateProject() {
   const navigate = useNavigate()
@@ -78,8 +34,6 @@ export default function CreateProject() {
   const [cropModalOpen, setCropModalOpen] = useState(false)
   const [cropImageSrc, setCropImageSrc] = useState(null)
 
-
-
   useEffect(() => {
     async function fetchClients() {
       try {
@@ -102,7 +56,6 @@ export default function CreateProject() {
   const handleImageChange = (e) => {
     const file = e.target.files[0]
     if (!file) return
-    // Open crop modal instead of directly setting preview
     const reader = new FileReader()
     reader.onload = (ev) => {
       setCropImageSrc(ev.target.result)
@@ -129,8 +82,6 @@ export default function CreateProject() {
     setImagePreview(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
-
-
 
   const handleSave = async (e) => {
     e.preventDefault()
@@ -184,135 +135,21 @@ export default function CreateProject() {
 
       <form onSubmit={handleSave} className="flex flex-col gap-6">
 
-        {/* Logo Pictures / Cover Image */}
-        <div className="flex justify-center mb-2">
-          <div className="w-[200px] h-[200px] sm:w-[240px] sm:h-[240px]">
-            {imagePreview ? (
-              <div className="relative rounded-[2rem] overflow-hidden w-full h-full bg-gray-100 border-4 border-white shadow-xl">
-                <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                <button
-                  type="button"
-                  onClick={clearImage}
-                  className="absolute top-3 right-3 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-colors backdrop-blur-md"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full h-full rounded-[2rem] border-2 border-dashed border-gray-300 bg-white hover:bg-gray-50 hover:border-kala-red/40 transition-all flex flex-col items-center justify-center gap-3 shadow-sm"
-              >
-                <div className="w-14 h-14 rounded-full bg-gray-50 flex items-center justify-center">
-                  <ImagePlus size={28} className="text-gray-400" />
-                </div>
-                <div className="text-center px-4">
-                  <span className="block text-sm font-bold text-gray-700">Upload Project Image</span>
-                  <span className="block text-xs text-gray-400 mt-1">JPG, PNG</span>
-                </div>
-              </button>
-            )}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleImageChange}
-            />
-          </div>
-        </div>
-
+        <ProjectImageUploadSection 
+          imagePreview={imagePreview}
+          onClearImage={clearImage}
+          onFileInputClick={() => fileInputRef.current?.click()}
+          fileInputRef={fileInputRef}
+          onImageChange={handleImageChange}
+        />
         
-        {/* Basic Details */}
-        <div>
-          <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3 px-1">Site Basic Details</h2>
-          <div className="bg-white rounded-3xl border border-gray-200 p-5 sm:p-6 shadow-sm flex flex-col gap-6">
-            
-            <div className="max-w-2xl">
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Site / Project Name <span className="text-kala-red">*</span></label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                  <Building2 size={18} className="text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Enter site or project name"
-                  value={form.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="max-w-2xl">
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Client</label>
-              <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-                <select
-                  value={form.clientId}
-                  onChange={(e) => handleInputChange('clientId', e.target.value)}
-                  className="flex-1 bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm font-medium text-kala-dark focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent appearance-none cursor-pointer"
-                  disabled={loadingClients}
-                >
-                  <option value="">Select client</option>
-                  {clients.map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-                </select>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  className="text-kala-red border-kala-red hover:bg-red-50 w-full sm:w-auto"
-                  onClick={() => setIsClientModalOpen(true)}
-                >
-                  <Plus size={16} className="mr-1" /> Add Client
-                </Button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl">
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Location of Project</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                    <MapPin size={18} className="text-gray-400" />
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Enter project location"
-                    value={form.location}
-                    onChange={(e) => handleInputChange('location', e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Project Value</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                    <IndianRupee size={18} className="text-gray-400" />
-                  </div>
-                  <input
-                    type="number"
-                    step="0.01"
-                    placeholder="Value in Cr"
-                    value={form.projectValue}
-                    onChange={(e) => handleInputChange('projectValue', e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-10 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-kala-red focus:border-transparent transition-all"
-                  />
-                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-xs font-bold text-gray-400">
-                    Cr
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-
+        <ProjectBasicDetailsSection 
+          form={form}
+          onChange={handleInputChange}
+          clients={clients}
+          loadingClients={loadingClients}
+          onOpenClientModal={() => setIsClientModalOpen(true)}
+        />
 
         {/* Action Bar */}
         <div className="flex flex-col sm:flex-row gap-3 mt-8 justify-end">
